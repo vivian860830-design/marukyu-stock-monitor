@@ -1,4 +1,146 @@
 {
+  "Aoarashi": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/11a1040c1",
+    "variants": {
+      "11A1040C1": {
+        "price": "¥2,120",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "11A1100C1": {
+        "price": "¥4,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1F23100C6": {
+        "price": "¥4,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      },
+      "1F23200C1": {
+        "price": "¥8,700",
+        "size": "200g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "青嵐"
+  },
+  "Chigi no Shiro": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1181040c1",
+    "variants": {
+      "1181040C1": {
+        "price": "¥2,920",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "1181100C1": {
+        "price": "¥6,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1181100C6": {
+        "price": "¥6,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      },
+      "1181200C1": {
+        "price": "¥12,700",
+        "size": "200g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "千木の白"
+  },
+  "Choan": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1121020c1",
+    "variants": {
+      "1121020C1": {
+        "price": "¥7,150",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1121040C1": {
+        "price": "¥13,820",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "長安"
+  },
+  "Eiju": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1131020c1",
+    "variants": {
+      "1131020C1": {
+        "price": "¥4,700",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1131040C1": {
+        "price": "¥9,120",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "永寿"
+  },
+  "Isuzu": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1",
+    "variants": {
+      "1191040C1": {
+        "price": "¥2,520",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "1191100C1": {
+        "price": "¥5,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1191200C1": {
+        "price": "¥10,700",
+        "size": "200g can",
+        "status": "SOLD_OUT"
+      },
+      "1F43100C6": {
+        "price": "¥5,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "五十鈴"
+  },
+  "Kinrin": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1151020c1",
+    "variants": {
+      "1151020C1": {
+        "price": "¥3,000",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1151040C1": {
+        "price": "¥5,720",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "1151100C1": {
+        "price": "¥13,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1151100C6": {
+        "price": "¥13,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "金輪"
+  },
   "Kiwami Choan": {
     "taiwan": "UNKNOWN",
     "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g36020c1",
@@ -15,5 +157,135 @@
       }
     },
     "zh": "極 長安"
+  },
+  "Tenju": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1111020c1",
+    "variants": {
+      "1111020C1": {
+        "price": "¥20,100",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1111040C1": {
+        "price": "¥40,120",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "天授"
+  },
+  "Unkaku": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1141020c1",
+    "variants": {
+      "1141020C1": {
+        "price": "¥3,700",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1141040C1": {
+        "price": "¥7,120",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "1141100C1": {
+        "price": "¥17,150",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1141100C6": {
+        "price": "¥16,840",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "雲鶴"
+  },
+  "Wakatake": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/11b1100c1",
+    "variants": {
+      "11B1100C1": {
+        "price": "¥3,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "11B1200C1": {
+        "price": "¥6,800",
+        "size": "200g can",
+        "status": "SOLD_OUT"
+      },
+      "1B27100C6": {
+        "price": "¥3,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "若竹"
+  },
+  "Wako": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1161020c1",
+    "variants": {
+      "1161020C1": {
+        "price": "¥2,400",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1161040C1": {
+        "price": "¥4,520",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "1161100C1": {
+        "price": "¥10,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1161100C6": {
+        "price": "¥10,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      },
+      "1161200C1": {
+        "price": "¥20,700",
+        "size": "200g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "和光"
+  },
+  "Yugen": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1171020c1",
+    "variants": {
+      "1171020C1": {
+        "price": "¥2,000",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1171040C1": {
+        "price": "¥3,720",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      },
+      "1171100C1": {
+        "price": "¥8,650",
+        "size": "100g can",
+        "status": "SOLD_OUT"
+      },
+      "1171100C6": {
+        "price": "¥8,340",
+        "size": "100g bag",
+        "status": "SOLD_OUT"
+      },
+      "1171200C1": {
+        "price": "¥16,700",
+        "size": "200g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "又玄"
   }
 }
