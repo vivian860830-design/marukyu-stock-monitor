@@ -92,10 +92,15 @@ def load_state():
     if not STATE_PATH.exists():
         return {"updated_at": None, "skus": {}}
     try:
-        return json.loads(STATE_PATH.read_text(encoding="utf-8"))
+        data = json.loads(STATE_PATH.read_text(encoding="utf-8"))
     except Exception:
         print("WARNING: stock_state.json exists but could not be parsed; starting a fresh baseline.")
         return {"updated_at": None, "skus": {}}
+    if not isinstance(data, dict) or not isinstance(data.get("skus"), dict):
+        print("WARNING: stock_state.json exists but is missing/malformed 'skus'; starting a fresh baseline "
+              "(existing unrelated keys, if any, are dropped).")
+        return {"updated_at": None, "skus": {}}
+    return data
 
 
 def save_state(state):
