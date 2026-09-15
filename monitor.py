@@ -133,7 +133,7 @@ def capture(page, label):
         for record in network:
             data['signals'].extend(record['signals'])
         data['status'], data['reason'] = classify(data)
-        if data['http_status'] != 200:
+        if data['http_status'] != 200 and not data['challenge']:
             data['status'], data['reason'] = 'UNKNOWN', 'HTTP_ERROR'
         data['network'] = network
         data['label'] = label
@@ -148,15 +148,47 @@ def capture(page, label):
         page.remove_listener('response', response_seen)
 
 
-def login(page):
+def login(page, mode):
     username = os.environ.get('MARUKYU_USERNAME', '')
     password = os.environ.get('MARUKYU_PASSWORD', '')
     if not username or not password:
         return 'SECRETS_MISSING'
-    page.goto(ACCOUNT, wait_until='domcontentloaded', timeout=45000)
-    settle(page)
-    if inspect(page)['challenge']:
-        return 'LOGIN_CHALLENGE'
+    documents = []
+    def document_seen(response):
+        if response.request.resource_type == 'document':
+            parts = urlsplit(response.url)
+            documents.append({'host': parts.hostname, 'path': parts.path,
+                              'status': response.status})
+    page.on('response', document_seen)
+    try:
+        page.goto(ACCOUNT, wait_until='domcontentloaded', timeout=45000)
+        settle(page)
+        # Observe whether an automatic check resolves; do not click challenges.
+        for _ in range(6):
+            if not inspect(page)['challenge']:
+                break
+            page.wait_for_timeout(5000)
+        info = page.evaluate("""() => ({
+            title: document.title,
+            login_forms: document.querySelectorAll('form.woocommerce-form-login, form.login').length,
+            human_verification: /Verify you are human/i.test(document.body?.innerText || ''),
+            security_verification: /Performing security verification/i.test(document.body?.innerText || ''),
+            frames: [...document.querySelectorAll('iframe[src]')].map(f => {
+                try { const u = new URL(f.src); return {host: u.hostname, path: u.pathname}; }
+                catch { return {host: 'unknown'}; }
+            })
+        })""")
+        info['challenge'] = inspect(page)['challenge']
+        info['documents'] = documents
+        info['observed_at'] = datetime.now(timezone.utc).isoformat()
+        save(f'{mode}-login-before-submit.json', info)
+        # Fresh context, before filling credentials; mask all input elements.
+        page.screenshot(path=str(OUT / f'{mode}-login-before-submit.png'),
+                        full_page=False, mask=[page.locator('input')])
+    finally:
+        page.remove_listener('response', document_seen)
+    if info['challenge']:
+        return 'LOGIN_CHALLENGE' 
     form = page.locator('form.woocommerce-form-login, form.login').first
     if not form.count():
         return 'LOGIN_FORM_MISSING'
@@ -181,7 +213,7 @@ def main():
                 page = context.new_page()
                 guest = capture(page, f'{mode}-guest')
                 summary.append(guest)
-                outcome = login(page)
+                outcome = login(page, mode)
                 if outcome == 'LOGIN_COOKIE_PRESENT':
                     authenticated = capture(page, f'{mode}-authenticated')
                     authenticated['login_result'] = outcome
