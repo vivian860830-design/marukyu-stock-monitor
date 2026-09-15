@@ -125,3 +125,24 @@ def classify_page(html: str) -> dict:
         page_status, page_reason = "OK", "ROWS_CLASSIFIED"
 
     return {"page": signals, "page_status": page_status, "page_reason": page_reason, "rows": results}
+
+
+def taiwan_shipping_status(html: str) -> str:
+    """Read the #calc_shipping_country dropdown, if present, and report
+    whether Taiwan (TW) appears as a shippable option. Site-wide, not
+    product-specific, so any one successfully-loaded logged-in page is
+    enough to check it. UNKNOWN if the selector isn't there (guest page,
+    Cloudflare challenge, or the site changed markup) — never guessed."""
+    soup = BeautifulSoup(html, "lxml")
+    country = soup.select_one("#calc_shipping_country")
+    if country is None:
+        return "UNKNOWN"
+    options = country.select("option")
+    if not options:
+        return "UNKNOWN"
+    for opt in options:
+        value = (opt.get("value") or "").strip().upper()
+        text = opt.get_text(strip=True).lower()
+        if value == "TW" or "taiwan" in text:
+            return "AVAILABLE"
+    return "UNAVAILABLE"
