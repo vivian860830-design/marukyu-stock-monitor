@@ -1,35 +1,30 @@
-name: Marukyu DOM Diagnostic
+name: Marukyu Kinrin Diagnostic
 
 on:
   workflow_dispatch:
 
-
 permissions:
   contents: read
-
 
 jobs:
 
   diagnostic:
 
-    name: Diagnose Marukyu DOM
+    name: Diagnose Kinrin
 
     runs-on: ubuntu-latest
 
     timeout-minutes: 15
-
 
     steps:
 
       - name: Checkout repository
         uses: actions/checkout@v6
 
-
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-
 
       - name: Install Playwright
         run: |
@@ -37,34 +32,20 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
-
-      - name: Diagnose Unkaku
+      - name: Diagnose Kinrin
         env:
           PYTHONUNBUFFERED: '1'
         run: |
           python monitor.py
 
-
       - name: Upload diagnostic screenshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unkaku-debug
-          path: unkaku-debug.png
+          name: kinrin-debug
+          path: kinrin-debug.png
           if-no-files-found: ignore
-          retention-days: 3          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
-          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
-        run: |
-
-          if [ -z "$GAS_WEBHOOK_URL" ]; then
-            echo "ERROR: GAS_WEBHOOK_URL is not configured."
-            exit 1
-          fi
-
-          if [ -z "$MONITOR_SECRET" ]; then
-            echo "ERROR: MONITOR_SECRET is not configured."
-            exit 1
-          fi
+          retention-days: 3          fi
 
           echo "Required secrets are configured."
 
