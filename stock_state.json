@@ -1,14 +1,19 @@
 {
-  "Aoarashi": "AVAILABLE",
-  "Chigi no Shiro": "SOLD_OUT",
-  "Choan": "AVAILABLE",
-  "Eiju": "AVAILABLE",
-  "Isuzu": "AVAILABLE",
-  "Kinrin": "AVAILABLE",
-  "Kiwami Choan": "SOLD_OUT",
-  "Tenju": "SOLD_OUT",
-  "Unkaku": "AVAILABLE",
-  "Wakatake": "SOLD_OUT",
-  "Wako": "SOLD_OUT",
-  "Yugen": "SOLD_OUT"
+  "Kiwami Choan": {
+    "taiwan": "UNKNOWN",
+    "url": "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g36020c1",
+    "variants": {
+      "1G36020C1": {
+        "price": "¥12,600",
+        "size": "20g can",
+        "status": "SOLD_OUT"
+      },
+      "1G36040C1": {
+        "price": "¥24,720",
+        "size": "40g can",
+        "status": "SOLD_OUT"
+      }
+    },
+    "zh": "極 長安"
+  }
 }
