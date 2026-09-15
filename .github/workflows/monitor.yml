@@ -1,4 +1,4 @@
-name: Marukyu matcha stock monitor (v4, 12 products + LINE notify)
+name: Marukyu matcha stock monitor (v5, one job per product)
 on:
   workflow_dispatch:
     inputs:
@@ -7,18 +7,24 @@ on:
         type: boolean
         default: true
   schedule:
-    # Every 30 minutes. Adjust as you like; GitHub Actions schedules are
-    # best-effort and can run a few minutes late during busy periods.
+    # Every 30 minutes. Each run is 12 independent jobs (one per product)
+    # plus one aggregate job; GitHub Actions schedules are best-effort and
+    # can run a few minutes late during busy periods.
     - cron: '*/30 * * * *'
-permissions:
-  contents: write
-concurrency:
-  group: marukyu-stock-monitor
-  cancel-in-progress: false
+
 jobs:
-  monitor:
+  capture:
+    # One job per product, confirmed necessary 2026-09-15: a single job
+    # visiting more than one product page in the same browser session gets
+    # Cloudflare-blocked after the first page, regardless of delay between
+    # navigations. Separate jobs get separate runner VMs (and, confirmed,
+    # separate outbound IPs), and each gets its own "first request" pass.
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: [unkaku, choan, eiju, kinrin, chigi-no-shiro, isuzu, aoarashi, kiwami-choan, wako, tenju, yugen, wakatake]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,16 +36,45 @@ jobs:
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y xvfb
-      - name: Run monitor
+      - name: Capture this product
         env:
           MARUKYU_STORAGE_STATE: ${{ secrets.MARUKYU_STORAGE_STATE }}
+          PRODUCT_SLUG: ${{ matrix.slug }}
+          PYTHONUNBUFFERED: '1'
+        run: xvfb-run -a python capture_one.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: product-${{ matrix.slug }}
+          path: diagnostic-output/${{ matrix.slug }}.json
+          if-no-files-found: warn
+          retention-days: 3
+
+  aggregate:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download all product results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: product-*
+          path: product-results
+          merge-multiple: true
+      - name: Aggregate, diff against stock_state.json, notify if restocked
+        env:
           GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
           MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
-          # workflow_dispatch's boolean input arrives as the string "true"/"false".
-          # A schedule-triggered run has no inputs at all, so default to a real run.
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
           PYTHONUNBUFFERED: '1'
-        run: xvfb-run -a python monitor.py
+        run: python aggregate.py
       - name: Commit updated stock_state.json
         if: always()
         run: |
@@ -52,11 +87,10 @@ jobs:
           else
             echo "stock_state.json unchanged, nothing to commit."
           fi
-      - name: Upload diagnostic evidence
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: marukyu-stock-monitor-evidence
+          name: aggregate-evidence
           path: diagnostic-output/
-          if-no-files-found: warn
+          if-no-files-found: ignore
           retention-days: 3
