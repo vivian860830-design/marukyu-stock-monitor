@@ -1,15 +1,24 @@
-name: Marukyu authenticated SKU diagnostic (v3, session-reuse experiment)
+name: Marukyu matcha stock monitor (v4, 12 products + LINE notify)
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (log the notification instead of sending it to the GAS webhook)'
+        type: boolean
+        default: true
+  schedule:
+    # Every 30 minutes. Adjust as you like; GitHub Actions schedules are
+    # best-effort and can run a few minutes late during busy periods.
+    - cron: '*/30 * * * *'
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: marukyu-auth-diagnostic
+  group: marukyu-stock-monitor
   cancel-in-progress: false
 jobs:
-  diagnostic:
+  monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,20 +30,33 @@ jobs:
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y xvfb
-      - name: Run diagnostic (guest capture, or reused-session if secret is set)
+      - name: Run monitor
         env:
-          # Optional. Base64-encoded storage_state.json from
-          # local/export_storage_state.py. When absent, monitor.py falls
-          # back to guest-only capture plus the known-blocked /account
-          # evidence probe, same as v1/v2.
           MARUKYU_STORAGE_STATE: ${{ secrets.MARUKYU_STORAGE_STATE }}
+          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
+          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
+          # workflow_dispatch's boolean input arrives as the string "true"/"false".
+          # A schedule-triggered run has no inputs at all, so default to a real run.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
           PYTHONUNBUFFERED: '1'
         run: xvfb-run -a python monitor.py
+      - name: Commit updated stock_state.json
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain stock_state.json)" ]; then
+            git config user.name "marukyu-stock-monitor"
+            git config user.email "actions@users.noreply.github.com"
+            git add stock_state.json
+            git commit -m "Update stock_state.json [skip ci]"
+            git push
+          else
+            echo "stock_state.json unchanged, nothing to commit."
+          fi
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: marukyu-auth-diagnostic-v3
+          name: marukyu-stock-monitor-evidence
           path: diagnostic-output/
           if-no-files-found: warn
           retention-days: 3
