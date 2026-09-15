@@ -45,26 +45,7 @@ jobs:
           name: kinrin-debug
           path: kinrin-debug.png
           if-no-files-found: ignore
-          retention-days: 3          fi
-
-          echo "Required secrets are configured."
-
-
-      # ======================================================
-      # 5. 執行監控
-      # ======================================================
-
-      - name: Check Marukyu stock
-        env:
-          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
-          MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
-          PYTHONUNBUFFERED: '1'
-        run: |
-          python monitor.py
-
-
-      # ======================================================
-      # 6. 確認 state
+          retention-days: 3      # 6. 確認 state
       #
       # 如果 monitor.py 因 403 等原因失敗，
       # workflow 會停在上一個 step，
