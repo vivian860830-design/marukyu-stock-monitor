@@ -1,949 +1,206 @@
+"""Kinrin authentication diagnostic. Never writes stock_state.json or sends LINE."""
 import json
+import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
-from playwright.sync_api import sync_playwright
-
-
-URL = (
-    "https://www.marukyu-koyamaen.co.jp/"
-    "english/shop/products/1151020c1"
-)
-
-TARGET_SKU = "1151040C1"
-TARGET_VARIATION_ID = "16925"
-
-OUTPUT_DIR = Path("diagnostic-output")
-OUTPUT_DIR.mkdir(exist_ok=True)
-
-NAVIGATION_TIMEOUT = 45_000
+URL = 'https://www.marukyu-koyamaen.co.jp/english/shop/products/1151020c1'
+ACCOUNT = 'https://www.marukyu-koyamaen.co.jp/english/shop/account'
+SKU, VARIATION = '1151040C1', '16925'
+OUT = Path('diagnostic-output')
+FIELDS = ('is_in_stock', 'is_purchasable', 'variation_is_active',
+          'variation_is_visible', 'stock_status', 'availability_html')
 
 
-def clean(value):
-    if value is None:
-        return ""
-
-    return re.sub(
-        r"\s+",
-        " ",
-        str(value)
-    ).strip()
+def save(name, value):
+    OUT.mkdir(exist_ok=True)
+    (OUT / name).write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
-def safe_json(value):
+def signals(value):
+    """Only retain objects explicitly identifying the target; never infer from price."""
+    result = []
+    if isinstance(value, dict):
+        identity = str(value.get('variation_id', '')) == VARIATION or value.get('sku') == SKU
+        contradictory = (value.get('sku') not in (None, '', SKU)
+                         or str(value.get('variation_id', VARIATION)) != VARIATION)
+        if identity and not contradictory:
+            found = {k: value[k] for k in FIELDS if k in value}
+            if found:
+                # Stock HTML is reduced to stock text, not saved as arbitrary HTML.
+                if 'availability_html' in found:
+                    found['availability_html'] = re.sub('<[^>]+>', ' ', str(found['availability_html'])).strip()
+                result.append(found)
+        for child in value.values():
+            result.extend(signals(child))
+    elif isinstance(value, list):
+        for child in value:
+            result.extend(signals(child))
+    return result
+
+
+def classify(snapshot):
+    if snapshot['challenge']:
+        return 'UNKNOWN', 'CLOUDFLARE_CHALLENGE'
+    if snapshot['login_required']:
+        return 'UNKNOWN', 'LOGIN_REQUIRED'
+    rows = snapshot['rows']
+    if len(rows) != 1 or rows[0]['sku'] != SKU:
+        return 'UNKNOWN', 'TARGET_MISSING_OR_AMBIGUOUS'
+    row = rows[0]
+    available = row['enabled_add_buttons'] > 0
+    sold_out = bool(re.search(r'\bout\s+of\s+stock\b|\bsold\s*out\b', row['stock_text'], re.I))
+    for item in snapshot['signals']:
+        available |= item.get('is_in_stock') is True and item.get('is_purchasable') is True
+        sold_out |= item.get('is_in_stock') is False or item.get('stock_status') == 'outofstock'
+    if available and sold_out:
+        return 'UNKNOWN', 'CONFLICTING_SIGNALS'
+    if available:
+        return 'AVAILABLE', 'EXPLICIT_SKU_SIGNAL'
+    if sold_out:
+        return 'SOLD_OUT', 'EXPLICIT_SKU_SIGNAL'
+    return 'UNKNOWN', 'NO_EXPLICIT_SKU_SIGNAL'
+
+
+def settle(page):
     try:
-        return json.dumps(
-            value,
-            ensure_ascii=False,
-            indent=2,
-            default=str
-        )
-    except Exception:
-        return repr(value)
+        page.wait_for_load_state('networkidle', timeout=15000)
+    except PlaywrightTimeout:
+        pass
+    page.wait_for_timeout(2000)
 
 
-def diagnose(browser, mode_name):
+def inspect(page):
+    return page.evaluate('''() => {
+      const text = document.body?.innerText || '';
+      const rows = [...document.querySelectorAll('.product-form-row[data-variation_id="16925"]')];
+      const country = document.querySelector('#calc_shipping_country');
+      return {
+        challenge: /Just a moment/i.test(document.title) || /Performing security verification|Verify you are human/.test(text),
+        login_required: /You must\\s+register and login\\s+to shop/i.test(text),
+        logged_in_marker: document.body.classList.contains('logged-in') || !!document.querySelector('a[href*="customer-logout"]'),
+        total_rows: document.querySelectorAll('.product-form-row').length,
+        rows: rows.map(r => ({
+          sku: r.querySelector('.pa-sku dd')?.textContent.trim() || '',
+          size: r.querySelector('.pa-size dd')?.textContent.trim() || '',
+          stock_text: r.innerText,
+          enabled_add_buttons: [...r.querySelectorAll('button.single_add_to_cart_button')].filter(b =>
+            !b.disabled && b.getAttribute('aria-disabled') !== 'true' &&
+            !b.classList.contains('disabled') && !b.classList.contains('wc-variation-is-unavailable') &&
+            b.getClientRects().length > 0).length
+        })),
+        shipping_calculator: !!document.querySelector('#shipping-calculator-form, .shipping-calculator-form'),
+        country_selector: !!country,
+        us_option: country ? !!country.querySelector('option[value="US"]') : null,
+        variation_json: [...document.querySelectorAll('[data-product_variations]')].map(e => e.getAttribute('data-product_variations')),
+        json_scripts: [...document.querySelectorAll('script[type="application/json"], script[type="application/ld+json"]')].map(e => e.textContent),
+        inline_keyword_counts: Object.fromEntries(['is_in_stock','is_purchasable','variation_is_active','1151040C1','16925'].map(k =>
+          [k, [...document.scripts].filter(s => !s.src && s.textContent.includes(k)).length]))
+      };
+    }''')
 
-    print()
-    print("=" * 80)
-    print(f"MODE: {mode_name}")
-    print("=" * 80)
 
-    context = browser.new_context(
-        locale="en-US",
-        timezone_id="Asia/Tokyo",
-        viewport={
-            "width": 1440,
-            "height": 1600,
-        },
-        extra_http_headers={
-            "Accept-Language":
-                "en-US,en;q=0.9",
-        },
-    )
-
-    page = context.new_page()
-
-    network_records = []
-
-    # ========================================================
-    # Browser / JS errors
-    # ========================================================
-
-    page.on(
-        "pageerror",
-        lambda error: print(
-            "[PAGE ERROR]",
-            error
-        )
-    )
-
-    page.on(
-        "console",
-        lambda message: (
-            print(
-                "[CONSOLE ERROR]",
-                message.text
-            )
-            if message.type == "error"
-            else None
-        )
-    )
-
-    # ========================================================
-    # Network responses
-    # ========================================================
-
-    def handle_response(response):
-
-        request = response.request
-
-        resource_type = request.resource_type
-
-        url_lower = response.url.lower()
-
-        interesting = (
-            resource_type in (
-                "xhr",
-                "fetch"
-            )
-            or
-            "wc-ajax" in url_lower
-            or
-            "woocommerce" in url_lower
-            or
-            "variation" in url_lower
-            or
-            "shipping" in url_lower
-            or
-            "cart" in url_lower
-        )
-
-        if not interesting:
+def capture(page, label):
+    network = []
+    def response_seen(response):
+        if response.request.resource_type not in ('xhr', 'fetch'):
             return
-
-        record = {
-            "status": response.status,
-            "resource_type": resource_type,
-            "method": request.method,
-            "url": response.url,
-        }
-
+        parts = urlsplit(response.url)
+        if parts.hostname != 'www.marukyu-koyamaen.co.jp' or not parts.path.startswith('/english/shop/'):
+            return
+        record = {'path': parts.path, 'status': response.status, 'signals': []}
         try:
-
-            content_type = (
-                response.headers.get(
-                    "content-type",
-                    ""
-                )
-            )
-
-            record["content_type"] = (
-                content_type
-            )
-
-            if (
-                "json" in content_type.lower()
-                or
-                "text" in content_type.lower()
-                or
-                "javascript" in content_type.lower()
-                or
-                "html" in content_type.lower()
-            ):
-
-                body = response.text()
-
-                if len(body) > 20_000:
-                    body = (
-                        body[:20_000]
-                        + "\n...[TRUNCATED]..."
-                    )
-
-                record["body"] = body
-
-        except Exception as error:
-
-            record["body_error"] = (
-                repr(error)
-            )
-
-        network_records.append(
-            record
-        )
-
-    page.on(
-        "response",
-        handle_response
-    )
-
-    # ========================================================
-    # Navigate
-    # ========================================================
-
-    response = page.goto(
-        URL,
-        wait_until="domcontentloaded",
-        timeout=NAVIGATION_TIMEOUT,
-    )
-
-    print(
-        "MAIN HTTP:",
-        response.status
-        if response
-        else "NO RESPONSE"
-    )
-
-    try:
-
-        page.wait_for_load_state(
-            "networkidle",
-            timeout=20_000,
-        )
-
-        print(
-            "NETWORK IDLE: YES"
-        )
-
-    except Exception:
-
-        print(
-            "NETWORK IDLE: TIMEOUT"
-        )
-
-    # 額外等 WooCommerce JS
-    page.wait_for_timeout(
-        8000
-    )
-
-    print(
-        "TITLE:",
-        page.title()
-    )
-
-    print(
-        "URL:",
-        page.url
-    )
-
-    # ========================================================
-    # Browser fingerprint
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("BROWSER ENVIRONMENT")
-    print("-" * 80)
-
-    browser_environment = (
-        page.evaluate(
-            """
-            () => ({
-                userAgent: navigator.userAgent,
-                webdriver: navigator.webdriver,
-                language: navigator.language,
-                languages: navigator.languages,
-                platform: navigator.platform,
-                vendor: navigator.vendor,
-                hardwareConcurrency:
-                    navigator.hardwareConcurrency,
-                deviceMemory:
-                    navigator.deviceMemory || null,
-                timezone:
-                    Intl.DateTimeFormat()
-                        .resolvedOptions()
-                        .timeZone,
-                screen: {
-                    width: screen.width,
-                    height: screen.height,
-                    colorDepth: screen.colorDepth
-                }
-            })
-            """
-        )
-    )
-
-    print(
-        safe_json(
-            browser_environment
-        )
-    )
-
-    # ========================================================
-    # Cookies
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("COOKIES")
-    print("-" * 80)
-
-    cookies = context.cookies()
-
-    for cookie in cookies:
-
-        print(
-            cookie.get("name"),
-            "=",
-            cookie.get("value")
-        )
-
-    # ========================================================
-    # Product rows
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("PRODUCT ROWS")
-    print("-" * 80)
-
-    rows = page.locator(
-        ".product-form-row"
-    )
-
-    print(
-        "ROW COUNT:",
-        rows.count()
-    )
-
-    for index in range(
-        rows.count()
-    ):
-
-        row = rows.nth(index)
-
-        variation_id = (
-            row.get_attribute(
-                "data-variation_id"
-            )
-        )
-
-        text = clean(
-            row.inner_text()
-        )
-
-        buttons = row.locator(
-            "button"
-        )
-
-        add_buttons = row.locator(
-            "button.single_add_to_cart_button"
-        )
-
-        print()
-        print(
-            f"ROW {index + 1}"
-        )
-
-        print(
-            "variation_id:",
-            variation_id
-        )
-
-        print(
-            "text:",
-            text
-        )
-
-        print(
-            "button count:",
-            buttons.count()
-        )
-
-        print(
-            "add-to-cart count:",
-            add_buttons.count()
-        )
-
-        if (
-            variation_id
-            == TARGET_VARIATION_ID
-        ):
-
-            print()
-            print(
-                "*** TARGET KINRIN 40g ROW ***"
-            )
-
-            html = row.evaluate(
-                "(el) => el.outerHTML"
-            )
-
-            print(html)
-
-            (
-                OUTPUT_DIR
-                / f"{mode_name}-kinrin-40g.html"
-            ).write_text(
-                html,
-                encoding="utf-8"
-            )
-
-    # ========================================================
-    # variations_form
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("VARIATIONS FORM")
-    print("-" * 80)
-
-    forms = page.locator(
-        "form.variations_form"
-    )
-
-    print(
-        "variations_form count:",
-        forms.count()
-    )
-
-    if forms.count() > 0:
-
-        form = forms.first
-
-        attributes = (
-            form.evaluate(
-                """
-                el => {
-                    const result = {};
-
-                    for (
-                        const attr
-                        of el.attributes
-                    ) {
-                        result[attr.name]
-                            = attr.value;
-                    }
-
-                    return result;
-                }
-                """
-            )
-        )
-
-        print(
-            "FORM ATTRIBUTES:"
-        )
-
-        print(
-            safe_json(
-                attributes
-            )
-        )
-
-        product_variations = (
-            form.get_attribute(
-                "data-product_variations"
-            )
-        )
-
-        print()
-        print(
-            "data-product_variations present:",
-            bool(product_variations)
-        )
-
-        if product_variations:
-
-            print(
-                "data-product_variations length:",
-                len(product_variations)
-            )
-
-            try:
-
-                parsed = json.loads(
-                    product_variations
-                )
-
-                print(
-                    "variation objects:",
-                    len(parsed)
-                    if isinstance(
-                        parsed,
-                        list
-                    )
-                    else "NOT LIST"
-                )
-
-                if isinstance(
-                    parsed,
-                    list
-                ):
-
-                    for variation in parsed:
-
-                        variation_id = str(
-                            variation.get(
-                                "variation_id",
-                                ""
-                            )
-                        )
-
-                        if (
-                            variation_id
-                            == TARGET_VARIATION_ID
-                        ):
-
-                            print()
-                            print(
-                                "*** TARGET VARIATION JSON ***"
-                            )
-
-                            print(
-                                safe_json(
-                                    variation
-                                )
-                            )
-
-            except Exception as error:
-
-                print(
-                    "Cannot parse "
-                    "data-product_variations:",
-                    repr(error)
-                )
-
-    # ========================================================
-    # WooCommerce JS globals
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("WOOCOMMERCE / JQUERY")
-    print("-" * 80)
-
-    js_environment = page.evaluate(
-        """
-        () => ({
-            jquery:
-                typeof window.jQuery
-                    !== "undefined",
-
-            wcVariationForm:
-                typeof window.jQuery
-                    !== "undefined"
-                &&
-                typeof window.jQuery.fn
-                    .wc_variation_form
-                    !== "undefined",
-
-            wcAddToCartParams:
-                typeof window
-                    .wc_add_to_cart_params
-                    !== "undefined",
-
-            wcCartFragmentsParams:
-                typeof window
-                    .wc_cart_fragments_params
-                    !== "undefined",
-
-            wcCheckoutParams:
-                typeof window
-                    .wc_checkout_params
-                    !== "undefined"
-        })
-        """
-    )
-
-    print(
-        safe_json(
-            js_environment
-        )
-    )
-
-    # ========================================================
-    # Search entire rendered HTML
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("RENDERED HTML SEARCH")
-    print("-" * 80)
-
-    html = page.content()
-
-    searches = [
-        TARGET_SKU,
-        TARGET_VARIATION_ID,
-        "Add to cart",
-        "add_to_cart",
-        "is_in_stock",
-        "is_purchasable",
-        "variation_is_active",
-        "variation_is_visible",
-        "availability_html",
-        "stock_status",
-        "outofstock",
-        "instock",
-        "calc_shipping_country",
-        "shipping-calculator-form",
-        "United States",
-        'value="US"',
-        "Taiwan",
-        'value="TW"',
-    ]
-
-    html_lower = html.lower()
-
-    for search in searches:
-
-        count = html_lower.count(
-            search.lower()
-        )
-
-        print(
-            f"{search}: {count}"
-        )
-
-    # ========================================================
-    # Context around target SKU / variation
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("TARGET CONTEXT")
-    print("-" * 80)
-
-    for needle in (
-        TARGET_SKU,
-        TARGET_VARIATION_ID,
-        "is_in_stock",
-        "is_purchasable",
-    ):
-
-        position = (
-            html_lower.find(
-                needle.lower()
-            )
-        )
-
-        print()
-        print(
-            "SEARCH:",
-            needle
-        )
-
-        if position == -1:
-
-            print(
-                "NOT FOUND"
-            )
-
-            continue
-
-        start = max(
-            0,
-            position - 1500
-        )
-
-        end = min(
-            len(html),
-            position + 3000
-        )
-
-        print(
-            html[start:end]
-        )
-
-    # ========================================================
-    # Scripts
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("INLINE SCRIPT SEARCH")
-    print("-" * 80)
-
-    scripts = page.locator(
-        "script"
-    )
-
-    print(
-        "SCRIPT COUNT:",
-        scripts.count()
-    )
-
-    interesting_scripts = []
-
-    keywords = [
-        TARGET_SKU.lower(),
-        TARGET_VARIATION_ID.lower(),
-        "is_in_stock",
-        "is_purchasable",
-        "variation_is_active",
-        "calc_shipping_country",
-        "shipping-calculator",
-    ]
-
-    for index in range(
-        scripts.count()
-    ):
-
-        script = scripts.nth(
-            index
-        )
-
-        try:
-
-            text = script.text_content() or ""
-
+            if 'json' in response.headers.get('content-type', ''):
+                record['signals'] = signals(response.json())
         except Exception:
+            record['json_read_error'] = True
+        network.append(record)
+    page.on('response', response_seen)
+    try:
+        response = page.goto(URL, wait_until='domcontentloaded', timeout=45000)
+        settle(page)
+        data = inspect(page)
+        data['http_status'] = response.status if response else None
+        data['signals'] = []
+        for raw in data.pop('variation_json') + data.pop('json_scripts'):
+            try:
+                data['signals'].extend(signals(json.loads(raw)))
+            except (ValueError, TypeError):
+                pass
+        for record in network:
+            data['signals'].extend(record['signals'])
+        data['status'], data['reason'] = classify(data)
+        if data['http_status'] != 200:
+            data['status'], data['reason'] = 'UNKNOWN', 'HTTP_ERROR'
+        data['network'] = network
+        data['label'] = label
+        data['observed_at'] = datetime.now(timezone.utc).isoformat()
+        # Only screenshot target SKU: no account screen, cookie values or session files.
+        row = page.locator('.product-form-row[data-variation_id="16925"]')
+        if row.count() == 1:
+            row.screenshot(path=str(OUT / f'{label}-kinrin-40g.png'))
+        save(f'{label}.json', data)
+        return data
+    finally:
+        page.remove_listener('response', response_seen)
 
-            continue
 
-        lower = text.lower()
-
-        matched = [
-            keyword
-            for keyword in keywords
-            if keyword in lower
-        ]
-
-        if not matched:
-            continue
-
-        print()
-        print(
-            f"SCRIPT {index + 1}"
-        )
-
-        print(
-            "MATCHED:",
-            ", ".join(
-                matched
-            )
-        )
-
-        preview = text
-
-        if len(preview) > 12_000:
-
-            preview = (
-                preview[:12_000]
-                + "\n...[TRUNCATED]..."
-            )
-
-        print(
-            preview
-        )
-
-        interesting_scripts.append({
-            "index": index + 1,
-            "matched": matched,
-            "content": text,
-        })
-
-    # ========================================================
-    # Network
-    # ========================================================
-
-    print()
-    print("-" * 80)
-    print("XHR / FETCH / WOOCOMMERCE NETWORK")
-    print("-" * 80)
-
-    print(
-        "Interesting responses:",
-        len(network_records)
-    )
-
-    for index, record in enumerate(
-        network_records,
-        start=1
-    ):
-
-        print()
-        print(
-            f"NETWORK {index}"
-        )
-
-        print(
-            "STATUS:",
-            record.get(
-                "status"
-            )
-        )
-
-        print(
-            "TYPE:",
-            record.get(
-                "resource_type"
-            )
-        )
-
-        print(
-            "METHOD:",
-            record.get(
-                "method"
-            )
-        )
-
-        print(
-            "URL:",
-            record.get(
-                "url"
-            )
-        )
-
-        body = record.get(
-            "body"
-        )
-
-        if body:
-
-            body_lower = (
-                body.lower()
-            )
-
-            important = any(
-                keyword in body_lower
-                for keyword in (
-                    TARGET_SKU.lower(),
-                    TARGET_VARIATION_ID,
-                    "is_in_stock",
-                    "is_purchasable",
-                    "variation",
-                    "shipping",
-                )
-            )
-
-            if important:
-
-                print(
-                    "BODY:"
-                )
-
-                print(
-                    body
-                )
-
-    # ========================================================
-    # Save artifacts
-    # ========================================================
-
-    (
-        OUTPUT_DIR
-        / f"{mode_name}-page.html"
-    ).write_text(
-        html,
-        encoding="utf-8"
-    )
-
-    (
-        OUTPUT_DIR
-        / f"{mode_name}-network.json"
-    ).write_text(
-        json.dumps(
-            network_records,
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8"
-    )
-
-    (
-        OUTPUT_DIR
-        / f"{mode_name}-scripts.json"
-    ).write_text(
-        json.dumps(
-            interesting_scripts,
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8"
-    )
-
-    page.screenshot(
-        path=str(
-            OUTPUT_DIR
-            / f"{mode_name}-screenshot.png"
-        ),
-        full_page=True,
-    )
-
-    print()
-    print(
-        "Artifacts saved for:",
-        mode_name
-    )
-
-    context.close()
+def login(page):
+    username = os.environ.get('MARUKYU_USERNAME', '')
+    password = os.environ.get('MARUKYU_PASSWORD', '')
+    if not username or not password:
+        return 'SECRETS_MISSING'
+    page.goto(ACCOUNT, wait_until='domcontentloaded', timeout=45000)
+    settle(page)
+    if inspect(page)['challenge']:
+        return 'LOGIN_CHALLENGE'
+    form = page.locator('form.woocommerce-form-login, form.login').first
+    if not form.count():
+        return 'LOGIN_FORM_MISSING'
+    # Standard WooCommerce fields; fail closed if the site changes.
+    form.locator('input[name="username"]').fill(username)
+    form.locator('input[name="password"]').fill(password)
+    form.locator('button[name="login"], input[name="login"]').first.click()
+    settle(page)
+    cookies = page.context.cookies(URL)
+    return 'LOGIN_COOKIE_PRESENT' if any(c['name'].startswith('wordpress_logged_in_') for c in cookies) else 'LOGIN_NOT_CONFIRMED'
 
 
 def main():
-
-    print("=" * 80)
-    print("MARUKYU GITHUB ENVIRONMENT DIAGNOSTIC")
-    print("=" * 80)
-
+    OUT.mkdir(exist_ok=True)
+    summary = []
     with sync_playwright() as p:
-
-        # ====================================================
-        # TEST 1 — HEADLESS
-        # ====================================================
-
-        print()
-        print(
-            "Starting HEADLESS Chromium..."
-        )
-
-        headless_browser = (
-            p.chromium.launch(
-                headless=True,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                ],
-            )
-        )
-
-        try:
-
-            diagnose(
-                headless_browser,
-                "headless"
-            )
-
-        finally:
-
-            headless_browser.close()
-
-        # ====================================================
-        # TEST 2 — HEADED
-        #
-        # GitHub workflow 會透過 xvfb-run 執行。
-        # ====================================================
-
-        print()
-        print(
-            "Starting HEADED Chromium..."
-        )
-
-        headed_browser = (
-            p.chromium.launch(
-                headless=False,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                ],
-            )
-        )
-
-        try:
-
-            diagnose(
-                headed_browser,
-                "headed"
-            )
-
-        finally:
-
-            headed_browser.close()
-
-    print()
-    print("=" * 80)
-    print("DIAGNOSTIC COMPLETED")
-    print("=" * 80)
+        for mode in ('headed', 'headless'):
+            browser = None
+            try:
+                browser = p.chromium.launch(headless=(mode == 'headless'))
+                context = browser.new_context(locale='en-US', timezone_id='Asia/Tokyo', viewport={'width': 1440, 'height': 1600})
+                page = context.new_page()
+                guest = capture(page, f'{mode}-guest')
+                summary.append(guest)
+                outcome = login(page)
+                if outcome == 'LOGIN_COOKIE_PRESENT':
+                    authenticated = capture(page, f'{mode}-authenticated')
+                    authenticated['login_result'] = outcome
+                    summary.append(authenticated)
+                else:
+                    summary.append({'label': f'{mode}-authenticated', 'status': 'UNKNOWN', 'reason': outcome})
+            except Exception as error:
+                # Avoid exception text: it can include account form contents.
+                summary.append({'label': mode, 'status': 'UNKNOWN', 'reason': type(error).__name__})
+            finally:
+                if browser:
+                    browser.close()
+    save('summary.json', summary)
+    for item in summary:
+        print(item['label'], item['status'], item['reason'])
+    print('Diagnostic only. No baseline updates and no notifications.')
+    if not any(x.get('label', '').endswith('-authenticated') and x.get('status') in ('AVAILABLE', 'SOLD_OUT') for x in summary):
+        raise SystemExit(2)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
