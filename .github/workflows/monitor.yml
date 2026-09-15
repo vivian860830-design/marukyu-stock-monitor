@@ -1,15 +1,11 @@
 name: Marukyu Stock Monitor
 
 on:
-  # 可以在 GitHub Actions 頁面手動執行
+  # 手動測試
   workflow_dispatch:
 
-  # 自動排程
-  # GitHub Actions cron 使用 UTC
+  # 日本時間：
   #
-  # 日本時間 JST = UTC + 9
-  #
-  # 週一～週五：
   # 09:00 JST = 00:00 UTC
   # 10:00 JST = 01:00 UTC
   # 11:00 JST = 02:00 UTC
@@ -20,27 +16,17 @@ on:
   # 16:00 JST = 07:00 UTC
   # 17:00 JST = 08:00 UTC
   # 17:30 JST = 08:30 UTC
+  #
+  # 週一～週五
 
   schedule:
     - cron: '0 0-8 * * 1-5'
     - cron: '30 8 * * 1-5'
 
 
-# ============================================================
-# 權限
-# ============================================================
-#
-# 允許 GitHub Actions 將更新後的 stock_state.json
-# commit 回 repository
-#
-
 permissions:
   contents: write
 
-
-# ============================================================
-# Jobs
-# ============================================================
 
 jobs:
 
@@ -50,13 +36,13 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 10
+    timeout-minutes: 20
 
 
     steps:
 
       # ======================================================
-      # 1. 取得 Repository
+      # 1. Checkout
       # ======================================================
 
       - name: Checkout repository
@@ -76,34 +62,19 @@ jobs:
 
 
       # ======================================================
-      # 3. 顯示執行資訊
+      # 3. 安裝 Playwright
       # ======================================================
 
-      - name: Show run information
+      - name: Install Playwright
         run: |
-          echo "========================================"
-          echo "Marukyu Koyamaen Stock Monitor"
-          echo "========================================"
-          echo "UTC time:"
-          date -u
-          echo ""
-          echo "Japan time:"
-          TZ=Asia/Tokyo date
-          echo ""
-          echo "Repository:"
-          echo "${{ github.repository }}"
-          echo ""
-          echo "Trigger:"
-          echo "${{ github.event_name }}"
-          echo "========================================"
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install --with-deps chromium
 
 
       # ======================================================
-      # 4. 確認必要 Secrets 已設定
+      # 4. 確認 Secrets
       # ======================================================
-      #
-      # 不會輸出 Secret 本身，只確認是否存在。
-      #
 
       - name: Check required secrets
         env:
@@ -124,7 +95,7 @@ jobs:
 
 
       # ======================================================
-      # 5. 執行 12 款抹茶庫存檢查
+      # 5. 執行 SKU 級監控
       # ======================================================
 
       - name: Check Marukyu stock
@@ -137,7 +108,7 @@ jobs:
 
 
       # ======================================================
-      # 6. 確認 stock_state.json 有成功產生
+      # 6. 確認 state
       # ======================================================
 
       - name: Verify stock state
@@ -149,23 +120,12 @@ jobs:
 
           echo "stock_state.json exists."
           echo ""
-          echo "Current stock state:"
           cat stock_state.json
 
 
       # ======================================================
-      # 7. 儲存新的庫存狀態
+      # 7. Commit state
       # ======================================================
-      #
-      # 第一次執行：
-      #   建立 stock_state.json 並 commit
-      #
-      # 後續執行：
-      #   有庫存狀態改變才 commit
-      #
-      # 完全沒改變：
-      #   不建立無意義的 commit
-      #
 
       - name: Save stock state
         run: |
@@ -180,11 +140,10 @@ jobs:
             exit 0
           fi
 
-          echo "Stock state changed."
-          echo "Saving new state..."
+          git commit -m "Update Marukyu SKU stock state"
 
-          git commit -m "Update Marukyu stock state"
+          git pull --rebase origin "${{ github.ref_name }}"
 
-          git push
+          git push origin HEAD:"${{ github.ref_name }}"
 
           echo "Stock state saved successfully."
