@@ -1,55 +1,35 @@
-name: Marukyu Stock Monitor
+name: Marukyu DOM Diagnostic
 
 on:
-  # SKU / Playwright 新版驗證期間先只允許手動執行。
-  #
-  # 確認 12 / 12 商品都能成功後，
-  # 再恢復平日每小時自動監控。
   workflow_dispatch:
 
 
 permissions:
-  contents: write
+  contents: read
 
 
 jobs:
 
-  monitor:
+  diagnostic:
 
-    name: Check Marukyu Stock
+    name: Diagnose Marukyu DOM
 
     runs-on: ubuntu-latest
 
-    # 12 個商品現在會分開建立 session，
-    # 中間也會有短暫間隔，因此提高 timeout。
-    timeout-minutes: 25
+    timeout-minutes: 15
 
 
     steps:
 
-      # ======================================================
-      # 1. Checkout
-      # ======================================================
-
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-
-      # ======================================================
-      # 2. Python
-      # ======================================================
 
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
-
-      # ======================================================
-      # 3. Playwright + Chromium
-      # ======================================================
 
       - name: Install Playwright
         run: |
@@ -58,13 +38,21 @@ jobs:
           python -m playwright install --with-deps chromium
 
 
-      # ======================================================
-      # 4. Secrets
-      # ======================================================
-
-      - name: Check required secrets
+      - name: Diagnose Unkaku
         env:
-          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python monitor.py
+
+
+      - name: Upload diagnostic screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unkaku-debug
+          path: unkaku-debug.png
+          if-no-files-found: ignore
+          retention-days: 3          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
           MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
         run: |
 
