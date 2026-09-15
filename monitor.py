@@ -36,6 +36,7 @@ Never adds to cart, never fills a login form, never submits credentials.
 import base64
 import json
 import os
+import random
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
@@ -62,6 +63,16 @@ PRODUCTS = [
 
 OUT = Path("diagnostic-output")
 STATE_PATH = Path("stock_state.json")
+
+# 2026-09-15 finding: with a valid reused session, the FIRST product page
+# in a run loads fine, but every page after it gets a Cloudflare challenge
+# (403, "Just a moment...") even though the cookie is still valid. Twelve
+# page loads back-to-back in one browser session reads as scraping, not
+# login. A randomized pause between navigations is the fix; tune with the
+# MIN/MAX_PAGE_DELAY_SECONDS env vars if 12 products still trip it, or
+# shorten it once you've confirmed a smaller delay is enough.
+MIN_PAGE_DELAY_SECONDS = float(os.environ.get("MIN_PAGE_DELAY_SECONDS", "6"))
+MAX_PAGE_DELAY_SECONDS = float(os.environ.get("MAX_PAGE_DELAY_SECONDS", "15"))
 
 
 def save_evidence(name, value):
@@ -197,7 +208,10 @@ def main():
             context = browser.new_context(**context_kwargs)
             page = context.new_page()
 
-            for product in PRODUCTS:
+            for index, product in enumerate(PRODUCTS):
+                if index > 0:
+                    delay_ms = int(random.uniform(MIN_PAGE_DELAY_SECONDS, MAX_PAGE_DELAY_SECONDS) * 1000)
+                    page.wait_for_timeout(delay_ms)
                 try:
                     result, html = capture_product(page, product)
                 except Exception as error:
