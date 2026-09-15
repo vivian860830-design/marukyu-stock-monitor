@@ -1,27 +1,11 @@
 name: Marukyu Stock Monitor
 
 on:
-  # 手動測試
+  # SKU / Playwright 新版驗證期間先只允許手動執行。
+  #
+  # 確認 12 / 12 商品都能成功後，
+  # 再恢復平日每小時自動監控。
   workflow_dispatch:
-
-  # 日本時間：
-  #
-  # 09:00 JST = 00:00 UTC
-  # 10:00 JST = 01:00 UTC
-  # 11:00 JST = 02:00 UTC
-  # 12:00 JST = 03:00 UTC
-  # 13:00 JST = 04:00 UTC
-  # 14:00 JST = 05:00 UTC
-  # 15:00 JST = 06:00 UTC
-  # 16:00 JST = 07:00 UTC
-  # 17:00 JST = 08:00 UTC
-  # 17:30 JST = 08:30 UTC
-  #
-  # 週一～週五
-
-  schedule:
-    - cron: '0 0-8 * * 1-5'
-    - cron: '30 8 * * 1-5'
 
 
 permissions:
@@ -36,7 +20,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 20
+    # 12 個商品現在會分開建立 session，
+    # 中間也會有短暫間隔，因此提高 timeout。
+    timeout-minutes: 25
 
 
     steps:
@@ -62,18 +48,18 @@ jobs:
 
 
       # ======================================================
-      # 3. 安裝 Playwright
+      # 3. Playwright + Chromium
       # ======================================================
 
       - name: Install Playwright
         run: |
           python -m pip install --upgrade pip
-          pip install playwright
-          playwright install --with-deps chromium
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
 
 
       # ======================================================
-      # 4. 確認 Secrets
+      # 4. Secrets
       # ======================================================
 
       - name: Check required secrets
@@ -81,6 +67,7 @@ jobs:
           GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
           MONITOR_SECRET: ${{ secrets.MONITOR_SECRET }}
         run: |
+
           if [ -z "$GAS_WEBHOOK_URL" ]; then
             echo "ERROR: GAS_WEBHOOK_URL is not configured."
             exit 1
@@ -95,7 +82,7 @@ jobs:
 
 
       # ======================================================
-      # 5. 執行 SKU 級監控
+      # 5. 執行監控
       # ======================================================
 
       - name: Check Marukyu stock
@@ -109,35 +96,48 @@ jobs:
 
       # ======================================================
       # 6. 確認 state
+      #
+      # 如果 monitor.py 因 403 等原因失敗，
+      # workflow 會停在上一個 step，
+      # 不會執行到這裡。
       # ======================================================
 
       - name: Verify stock state
         run: |
+
           if [ ! -f stock_state.json ]; then
-            echo "ERROR: stock_state.json was not created."
+            echo "ERROR: stock_state.json does not exist."
             exit 1
           fi
 
-          echo "stock_state.json exists."
           echo ""
+          echo "========================================"
+          echo "stock_state.json"
+          echo "========================================"
+          echo ""
+
           cat stock_state.json
 
 
       # ======================================================
-      # 7. Commit state
+      # 7. 儲存 state
       # ======================================================
 
       - name: Save stock state
         run: |
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add stock_state.json
 
           if git diff --cached --quiet; then
+
             echo "Stock state unchanged."
             echo "No commit required."
+
             exit 0
+
           fi
 
           git commit -m "Update Marukyu SKU stock state"
