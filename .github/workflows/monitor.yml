@@ -1,4 +1,4 @@
-name: Marukyu Kinrin Diagnostic
+name: Marukyu GitHub Environment Diagnostic
 
 on:
   workflow_dispatch:
@@ -7,14 +7,13 @@ permissions:
   contents: read
 
 jobs:
-
   diagnostic:
 
-    name: Diagnose Kinrin
+    name: Diagnose GitHub Environment
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
 
@@ -32,68 +31,17 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
-      - name: Diagnose Kinrin
+      - name: Run diagnostic
         env:
           PYTHONUNBUFFERED: '1'
         run: |
-          python monitor.py
+          xvfb-run -a python monitor.py
 
-      - name: Upload diagnostic screenshot
+      - name: Upload diagnostic artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kinrin-debug
-          path: kinrin-debug.png
-          if-no-files-found: ignore
-          retention-days: 3      # 6. 確認 state
-      #
-      # 如果 monitor.py 因 403 等原因失敗，
-      # workflow 會停在上一個 step，
-      # 不會執行到這裡。
-      # ======================================================
-
-      - name: Verify stock state
-        run: |
-
-          if [ ! -f stock_state.json ]; then
-            echo "ERROR: stock_state.json does not exist."
-            exit 1
-          fi
-
-          echo ""
-          echo "========================================"
-          echo "stock_state.json"
-          echo "========================================"
-          echo ""
-
-          cat stock_state.json
-
-
-      # ======================================================
-      # 7. 儲存 state
-      # ======================================================
-
-      - name: Save stock state
-        run: |
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add stock_state.json
-
-          if git diff --cached --quiet; then
-
-            echo "Stock state unchanged."
-            echo "No commit required."
-
-            exit 0
-
-          fi
-
-          git commit -m "Update Marukyu SKU stock state"
-
-          git pull --rebase origin "${{ github.ref_name }}"
-
-          git push origin HEAD:"${{ github.ref_name }}"
-
-          echo "Stock state saved successfully."
+          name: marukyu-environment-diagnostic
+          path: diagnostic-output/
+          if-no-files-found: warn
+          retention-days: 3
