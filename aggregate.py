@@ -12,6 +12,16 @@ State rules (unchanged from the single-job v4 monitor.py this replaces):
   - A SKU seen for the first time is recorded as baseline only; no
     notification on first sight.
   - Only SOLD_OUT -> AVAILABLE counts as a restock.
+
+DRY_RUN semantics (fixed 2026-09-17 — see main()): DRY_RUN=true now means a
+true no-side-effects simulation. It diffs the freshly captured rows against
+the CURRENTLY COMMITTED stock_state.json (never writes it, never commits
+it) and logs what notification WOULD be sent, without calling the GAS
+webhook. Previously, dry runs still overwrote and (via the workflow's
+commit step) persisted stock_state.json, only skipping the webhook call —
+so a dry run could silently consume a real SOLD_OUT->AVAILABLE transition,
+leaving nothing for a later real run to detect and announce. Confirmed
+2026-09-17: that is exactly what happened to a real restock.
 """
 import json
 import os
@@ -128,11 +138,23 @@ def main():
         if restock:
             restocks.append(restock)
 
-    state["updated_at"] = datetime.now(timezone.utc).isoformat()
-    save_state(state)
-
     print(f"taiwan shipping signal: {taiwan}")
     print(f"DRY_RUN: {dry_run}")
+
+    if dry_run:
+        # A dry run must leave no trace: it simulates the diff against the
+        # CURRENTLY COMMITTED stock_state.json (loaded above) purely to show
+        # what WOULD happen, but never writes it back. Persisting here would
+        # silently consume the real SOLD_OUT->AVAILABLE transition a dry run
+        # detects, so a later real (non-dry) run finds nothing changed and
+        # sends no notification even though a genuine restock occurred and
+        # was never actually announced. Confirmed 2026-09-17: this exact
+        # sequence (dry run, then real run) is what happened.
+        print("DRY_RUN=true: stock_state.json left untouched (no write, nothing to commit).")
+    else:
+        state["updated_at"] = datetime.now(timezone.utc).isoformat()
+        save_state(state)
+
     if restocks:
         print(f"RESTOCK DETECTED: {len(restocks)} product(s) -> {[r['en'] for r in restocks]}")
         send_gas_notification(restocks, taiwan, dry_run)
