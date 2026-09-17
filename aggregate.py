@@ -22,6 +22,36 @@ commit step) persisted stock_state.json, only skipping the webhook call —
 so a dry run could silently consume a real SOLD_OUT->AVAILABLE transition,
 leaving nothing for a later real run to detect and announce. Confirmed
 2026-09-17: that is exactly what happened to a real restock.
+
+Session-health alert (added 2026-09-17): this whole monitor depends on the
+MARUKYU_STORAGE_STATE cookie staying valid. When it expires, every capture
+job silently reads as a logged-out guest (page_reason=LOGIN_REQUIRED) and
+every row becomes UNKNOWN — which per the state rules above never updates
+stock_state.json and never fires a restock notification. So a dead cookie
+does not look like an error, it looks like permanent silence: no crash, no
+alert, `stock_state.json` just quietly stops tracking reality. Confirmed
+2026-09-17 on a real run (Tenju: page_reason=LOGIN_REQUIRED, http_status
+200 — no Cloudflare block, just an unauthenticated session).
+check_session_health() below watches for this specific pattern (more than
+half of the 12 products reading LOGIN_REQUIRED in one run) and pushes a
+one-time alert through the same GAS webhook, but as its own payload shape
+{"type": "session-alert", "affected": N, "total": 12} — a sibling of the
+restock payload, not a fake product squeezed into it. This requires the
+matching Apps Script change (handleGithubNotification branching on
+data.type === "session-alert" into handleSessionAlert(), which builds its
+own plain-text message via buildSessionAlertMessage() — see the Code.gs
+delivered alongside this file on 2026-09-17). Without that Apps Script
+change deployed, a session-alert payload reaches the webapp but is treated
+like a restock with no "products" array and gets rejected there — deploy
+both sides together.
+CLOUDFLARE_CHALLENGE is deliberately NOT counted toward this alert: unlike
+an expired cookie, a Cloudflare challenge can be a one-off block that
+clears on its own next run, so treating it as a firm signal would risk
+false alarms.
+The alert fires once (state["session_alert_sent_at"] is set on the send)
+and stays silent on every subsequent run while the problem persists, so it
+does not spam a message every 30 minutes; it resets automatically once a
+later run sees the majority of products classify cleanly again.
 """
 import json
 import os
@@ -30,9 +60,12 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from products import PRODUCTS
+
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "product-results"))
 STATE_PATH = Path("stock_state.json")
 EVIDENCE_DIR = Path("diagnostic-output")
+SESSION_ISSUE_REASONS = {"LOGIN_REQUIRED"}
 
 
 def load_state():
@@ -94,31 +127,83 @@ def diff_and_update(state, result):
     return {"zh": zh, "en": en, "url": url, "variants": restocked} if restocked else None
 
 
-def send_gas_notification(products_with_restocks, taiwan, dry_run):
+def _post_to_gas_webhook(payload, dry_run, evidence_filename):
+    """Shared low-level sender for both payload shapes (restock and
+    session-alert). `payload` must already include "source" and "secret"."""
     EVIDENCE_DIR.mkdir(exist_ok=True)
     webhook_url = os.environ.get("GAS_WEBHOOK_URL", "")
-    secret = os.environ.get("MONITOR_SECRET", "")
-    payload = {"source": "github-monitor", "secret": secret, "products": products_with_restocks, "taiwan": taiwan}
-    (EVIDENCE_DIR / "gas-notification-payload.json").write_text(
+    (EVIDENCE_DIR / evidence_filename).write_text(
         json.dumps({**payload, "secret": "***redacted***"}, ensure_ascii=False, indent=2), encoding="utf-8")
 
     if dry_run:
-        print("DRY_RUN=true: not sending. Payload would have been:")
+        print(f"DRY_RUN=true: not sending ({evidence_filename}). Payload would have been:")
         print(json.dumps({**payload, "secret": "***redacted***"}, ensure_ascii=False, indent=2))
-        return
-    if not webhook_url or not secret:
+        return True
+    if not webhook_url or not payload.get("secret"):
         print("ERROR: GAS_WEBHOOK_URL or MONITOR_SECRET is not set; cannot send notification.")
-        return
+        return False
 
     body = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(webhook_url, data=body, headers={"Content-Type": "application/json"}, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             print(f"GAS webhook responded: HTTP {response.status}")
+            return 200 <= response.status < 300
     except urllib.error.HTTPError as error:
         print(f"GAS webhook HTTP error: {error.code} {error.reason}")
+        return False
     except urllib.error.URLError as error:
         print(f"GAS webhook request failed: {error.reason}")
+        return False
+
+
+def send_gas_notification(products_with_restocks, taiwan, dry_run):
+    secret = os.environ.get("MONITOR_SECRET", "")
+    payload = {"source": "github-monitor", "secret": secret, "products": products_with_restocks, "taiwan": taiwan}
+    return _post_to_gas_webhook(payload, dry_run, "gas-notification-payload.json")
+
+
+def send_session_alert(affected_count, total, dry_run):
+    """Distinct payload shape from a restock notification — requires the
+    matching handleSessionAlert()/buildSessionAlertMessage() branch in
+    Code.gs (see module docstring)."""
+    secret = os.environ.get("MONITOR_SECRET", "")
+    payload = {
+        "source": "github-monitor",
+        "secret": secret,
+        "type": "session-alert",
+        "affected": affected_count,
+        "total": total,
+    }
+    return _post_to_gas_webhook(payload, dry_run, "session-alert-payload.json")
+
+
+def check_session_health(state, results, dry_run):
+    """Detects a dead MARUKYU_STORAGE_STATE cookie (see module docstring)
+    and sends a one-time alert, distinct from a restock notification, via
+    the same GAS webhook. Mutates state["session_alert_sent_at"] — the
+    caller only persists that if not dry_run, same as everything else in
+    stock_state.json."""
+    total = len(PRODUCTS)
+    affected = [r for r in results if r.get("page_reason") in SESSION_ISSUE_REASONS]
+    already_alerted = bool(state.get("session_alert_sent_at"))
+
+    if len(affected) <= total / 2:
+        if already_alerted:
+            print(f"Session health OK now ({len(affected)}/{total} LOGIN_REQUIRED) — clearing prior alert flag.")
+            state["session_alert_sent_at"] = None
+        return
+
+    if already_alerted:
+        print(f"Session health: {len(affected)}/{total} products LOGIN_REQUIRED, but already alerted at "
+              f"{state['session_alert_sent_at']}; not re-sending until it recovers.")
+        return
+
+    print(f"SESSION HEALTH ALERT: {len(affected)}/{total} products came back LOGIN_REQUIRED this run — "
+          f"MARUKYU_STORAGE_STATE is very likely expired.")
+    sent = send_session_alert(len(affected), total, dry_run)
+    if sent and not dry_run:
+        state["session_alert_sent_at"] = datetime.now(timezone.utc).isoformat()
 
 
 def main():
@@ -140,6 +225,8 @@ def main():
 
     print(f"taiwan shipping signal: {taiwan}")
     print(f"DRY_RUN: {dry_run}")
+
+    check_session_health(state, results, dry_run)
 
     if dry_run:
         # A dry run must leave no trace: it simulates the diff against the
