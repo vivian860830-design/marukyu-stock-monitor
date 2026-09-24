@@ -52,6 +52,24 @@ The alert fires once (state["session_alert_sent_at"] is set on the send)
 and stays silent on every subsequent run while the problem persists, so it
 does not spam a message every 30 minutes; it resets automatically once a
 later run sees the majority of products classify cleanly again.
+
+Commit-every-run fix (2026-09-24): previously stock_state.json was
+rewritten with a fresh now() timestamp on EVERY real (non-dry) run — both
+per-SKU (`observed_at` in diff_and_update) and top-level (`updated_at` in
+main()) — even when no SKU's status actually changed. Since the workflow
+only commits when `git status --porcelain stock_state.json` is non-empty,
+this guaranteed a commit every single 30-minute run, forever, regardless
+of whether anything real happened. This is NOT something GitHub Actions
+"variables" (the `vars` context) can fix — that feature is for passing
+config values into workflow YAML, not for suppressing git diffs on a
+tracked file. The actual fix: `observed_at` per SKU now only updates when
+that SKU's status changed (or on first sighting) — it now means "since
+when has this been the current status", not "last time this ran". And
+`main()` now only bumps `updated_at` / writes / lets the commit happen
+when the resulting state actually differs from what was loaded at the
+start of the run (compared via a JSON snapshot). A run where every
+product's status is identical to last time now leaves stock_state.json
+completely untouched, so the commit step has nothing to commit.
 """
 import json
 import os
@@ -106,8 +124,17 @@ def load_product_results():
 
 
 def diff_and_update(state, result):
+    """NOTE (fixed 2026-09-24): `observed_at` is now only refreshed when a
+    SKU's status actually changed since the last recorded state (or on its
+    first sighting) — it no longer means "last time this ran", it means
+    "since when has this been the current status". Previously it was
+    unconditionally rewritten to now() on every single run, which meant
+    stock_state.json differed on every real (non-dry) run even when
+    nothing about stock changed, forcing a commit every 30 minutes. See
+    main()'s matching fix for state["updated_at"]."""
     zh, en, url = result.get("product_zh", ""), result.get("product_en", ""), result.get("product_url", "")
     restocked = []
+    now = datetime.now(timezone.utc).isoformat()
     for row in result.get("rows", []):
         key = row.get("variation_id")
         if not key:
@@ -118,11 +145,13 @@ def diff_and_update(state, result):
         previous = state["skus"].get(key)
         if previous is not None and previous.get("status") == "SOLD_OUT" and current == "AVAILABLE":
             restocked.append({"sku": row["sku"], "size": row["size"]})
+        status_changed = previous is None or previous.get("status") != current
+        observed_at = now if status_changed else previous.get("observed_at", now)
         state["skus"][key] = {
             "product_zh": zh, "product_en": en,
             "sku": row["sku"], "size": row["size"],
             "status": current,
-            "observed_at": datetime.now(timezone.utc).isoformat(),
+            "observed_at": observed_at,
         }
     return {"zh": zh, "en": en, "url": url, "variants": restocked} if restocked else None
 
@@ -211,6 +240,11 @@ def main():
     state = load_state()
     results = load_product_results()
 
+    # Snapshot taken BEFORE any mutation below, used at save time (fixed
+    # 2026-09-24) to decide whether stock_state.json actually needs to be
+    # rewritten/committed this run — see the comment near save_state() call.
+    before_snapshot = json.dumps(state, sort_keys=True, ensure_ascii=False)
+
     print(f"Loaded {len(results)} product result(s) out of 12 expected.")
     restocks = []
     taiwan = "UNKNOWN"
@@ -239,8 +273,23 @@ def main():
         # sequence (dry run, then real run) is what happened.
         print("DRY_RUN=true: stock_state.json left untouched (no write, nothing to commit).")
     else:
-        state["updated_at"] = datetime.now(timezone.utc).isoformat()
-        save_state(state)
+        # Fixed 2026-09-24: only bump updated_at / rewrite the file when the
+        # SKU data actually changed (compared to the before_snapshot taken
+        # at the top of main(), before diff_and_update/check_session_health
+        # touched anything). Previously updated_at was stamped with now()
+        # unconditionally, which alone guaranteed stock_state.json differed
+        # on every real run -> the workflow's `git status --porcelain`
+        # commit-gate always found a diff and committed every 30 minutes,
+        # even when no SKU's status actually changed. Genuine changes (a
+        # status flip via diff_and_update, or session_alert_sent_at being
+        # set/cleared by check_session_health) are still saved and
+        # committed as before.
+        after_snapshot = json.dumps(state, sort_keys=True, ensure_ascii=False)
+        if after_snapshot != before_snapshot:
+            state["updated_at"] = datetime.now(timezone.utc).isoformat()
+            save_state(state)
+        else:
+            print("No changes this run (all SKUs unchanged): stock_state.json left as-is, nothing to commit.")
 
     if restocks:
         print(f"RESTOCK DETECTED: {len(restocks)} product(s) -> {[r['en'] for r in restocks]}")
