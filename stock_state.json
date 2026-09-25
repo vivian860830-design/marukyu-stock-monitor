@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-25T08:14:58.572942+00:00",
+  "updated_at": "2026-09-25T08:44:29.209207+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -302,16 +302,16 @@
       "product_en": "Yugen",
       "sku": "1171040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-25T08:14:58.572768+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-25T08:44:29.209003+00:00"
     },
     "16935": {
       "product_zh": "又玄",
       "product_en": "Yugen",
       "sku": "1171100C1",
       "size": "100g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-09-24T05:43:03.843233+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-09-25T08:44:29.209003+00:00"
     },
     "16936": {
       "product_zh": "又玄",
