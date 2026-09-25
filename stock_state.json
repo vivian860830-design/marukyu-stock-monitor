@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-25T08:44:29.209207+00:00",
+  "updated_at": "2026-09-25T09:43:56.254830+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -150,8 +150,8 @@
       "product_en": "Isuzu",
       "sku": "1F43100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-25T07:43:24.724611+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-25T09:43:56.254645+00:00"
     },
     "16946": {
       "product_zh": "五十鈴",
@@ -310,8 +310,8 @@
       "product_en": "Yugen",
       "sku": "1171100C1",
       "size": "100g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-25T08:44:29.209003+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-25T09:43:56.254696+00:00"
     },
     "16936": {
       "product_zh": "又玄",
