@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-29T07:45:36.367226+00:00",
+  "updated_at": "2026-09-29T09:16:39.234051+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -14,8 +14,8 @@
       "product_en": "Unkaku",
       "sku": "1141040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-29T00:20:26.549408+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-29T09:16:39.233874+00:00"
     },
     "16922": {
       "product_zh": "雲鶴",
@@ -214,8 +214,8 @@
       "product_en": "Tenju",
       "sku": "1111020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-29T00:20:26.549401+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-29T09:16:39.233869+00:00"
     },
     "16901": {
       "product_zh": "天授",
