@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-29T00:20:26.549645+00:00",
+  "updated_at": "2026-09-29T02:13:31.895360+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-29T00:20:26.549324+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-29T02:13:31.895001+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
@@ -54,8 +54,8 @@
       "product_en": "Aoarashi",
       "sku": "1F23100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-29T00:20:26.549324+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-29T02:13:31.895001+00:00"
     },
     "16950": {
       "product_zh": "青嵐",
@@ -134,8 +134,8 @@
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-29T00:20:26.549378+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-29T02:13:31.895078+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
