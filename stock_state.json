@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-30T09:47:19.059691+00:00",
+  "updated_at": "2026-09-30T13:45:44.139910+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -110,8 +110,8 @@
       "product_en": "Choan",
       "sku": "1121040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-30T07:46:22.585754+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-30T13:45:44.139694+00:00"
     },
     "16917": {
       "product_zh": "永寿",
