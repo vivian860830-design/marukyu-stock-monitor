@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-30T08:46:55.570081+00:00",
+  "updated_at": "2026-09-30T09:15:10.206101+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-30T07:46:22.585719+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-30T09:15:10.205853+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
@@ -78,8 +78,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181100C1",
       "size": "100g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-09-30T07:46:22.585742+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-09-30T09:15:10.205882+00:00"
     },
     "16941": {
       "product_zh": "千木の白",
