@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-01T06:53:40.489488+00:00",
+  "updated_at": "2026-10-01T07:46:51.904219+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -86,8 +86,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-01T06:53:40.489283+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-01T07:46:51.903997+00:00"
     },
     "16942": {
       "product_zh": "千木の白",
@@ -134,8 +134,8 @@
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-01T06:53:40.489310+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-01T07:46:51.904026+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
@@ -174,8 +174,8 @@
       "product_en": "Kinrin",
       "sku": "1151040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-01T06:53:40.489321+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-01T07:46:51.904036+00:00"
     },
     "16926": {
       "product_zh": "金輪",
