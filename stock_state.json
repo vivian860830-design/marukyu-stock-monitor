@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-01T10:45:43.573779+00:00",
+  "updated_at": "2026-10-01T12:20:32.810816+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -238,8 +238,8 @@
       "product_en": "Wakatake",
       "sku": "1B27100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-01T06:53:40.489356+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-01T12:20:32.810583+00:00"
     },
     "17633": {
       "product_zh": "若竹",
