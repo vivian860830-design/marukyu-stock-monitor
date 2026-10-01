@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-01T07:46:51.904219+00:00",
+  "updated_at": "2026-10-01T08:17:27.628014+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -54,8 +54,8 @@
       "product_en": "Aoarashi",
       "sku": "1F23100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-01T06:53:40.489255+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-01T08:17:27.627702+00:00"
     },
     "16950": {
       "product_zh": "青嵐",
