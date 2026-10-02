@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-10-02T04:45:47.409247+00:00",
+  "updated_at": "2026-10-02T05:45:01.352106+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-02T02:44:00.036393+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-02T05:45:01.351834+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
@@ -134,8 +134,8 @@
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-02T02:44:00.036355+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-02T05:45:01.351789+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
@@ -302,8 +302,8 @@
       "product_en": "Yugen",
       "sku": "1171040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-02T02:44:00.036442+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-02T05:45:01.351873+00:00"
     },
     "16935": {
       "product_zh": "又玄",
