@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-02T05:45:01.352106+00:00",
+  "updated_at": "2026-10-02T08:16:23.526160+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-02T02:44:00.036300+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-02T08:16:23.525857+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
