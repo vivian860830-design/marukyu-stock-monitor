@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-02T14:52:37.140464+00:00",
+  "updated_at": "2026-10-02T16:21:47.547877+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -190,8 +190,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-02T02:44:00.036364+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-02T16:21:47.547718+00:00"
     },
     "22822": {
       "product_zh": "極 長安",
@@ -238,8 +238,8 @@
       "product_en": "Wakatake",
       "sku": "1B27100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-02T02:44:00.036410+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-02T16:21:47.547750+00:00"
     },
     "17633": {
       "product_zh": "若竹",
