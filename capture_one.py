@@ -23,7 +23,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
-from stock_classifier import classify_page, taiwan_shipping_status
+from stock_classifier import classify_page
 from products import get_product
 
 OUT = Path("diagnostic-output")
@@ -77,7 +77,16 @@ def main():
     result["product_url"] = product["url"]
     result["http_status"] = response.status if response else None
     result["observed_at"] = datetime.now(timezone.utc).isoformat()
-    result["taiwan"] = taiwan_shipping_status(html) if html else "UNKNOWN"
+    # Taiwan-shipping status is no longer checked per-product here (fixed
+    # 2026-10-03 — see capture_taiwan.py and stock_classifier.
+    # taiwan_shipping_status_from_checkout). That real signal only comes
+    # from the checkout page, read once by its own dedicated job — never
+    # folded into this job, since a second page.goto in the same
+    # job/session gets Cloudflare-blocked (see this module's docstring).
+    # aggregate.py already picks up the first non-UNKNOWN "taiwan" value
+    # across all product-results/*.json, so leaving it UNKNOWN here just
+    # means this product's own result is skipped in that search.
+    result["taiwan"] = "UNKNOWN"
     if result["http_status"] != 200 and not result["page"]["challenge"]:
         result["page_status"], result["page_reason"] = "UNKNOWN", "HTTP_ERROR"
 
