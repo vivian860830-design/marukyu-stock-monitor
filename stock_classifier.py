@@ -128,11 +128,16 @@ def classify_page(html: str) -> dict:
 
 
 def taiwan_shipping_status(html: str) -> str:
-    """Read the #calc_shipping_country dropdown, if present, and report
-    whether Taiwan (TW) appears as a shippable option. Site-wide, not
-    product-specific, so any one successfully-loaded logged-in page is
-    enough to check it. UNKNOWN if the selector isn't there (guest page,
-    Cloudflare challenge, or the site changed markup) — never guessed."""
+    """DEPRECATED as of 2026-10-03 — kept only for reference, no longer
+    called by anything. Read the #calc_shipping_country dropdown, if
+    present, and reported whether Taiwan (TW) appeared as an option in
+    that list. Confirmed 2026-10-03 by the user against her own account:
+    this dropdown is a DIFFERENT, less authoritative widget than the
+    checkout page's actual shipping-zone calculation — it kept listing TW
+    as a selectable option after shipping to Taiwan had genuinely stopped
+    working, so it was producing false AVAILABLE readings. Replaced by
+    taiwan_shipping_status_from_checkout() below, which reads the real
+    computed result instead of a static country list."""
     soup = BeautifulSoup(html, "lxml")
     country = soup.select_one("#calc_shipping_country")
     if country is None:
@@ -146,3 +151,39 @@ def taiwan_shipping_status(html: str) -> str:
         if value == "TW" or "taiwan" in text:
             return "AVAILABLE"
     return "UNAVAILABLE"
+
+
+def taiwan_shipping_status_from_checkout(html: str) -> str:
+    """Reads the REAL Taiwan-shipping signal from the checkout page's
+    order-review table (added 2026-10-03). Confirmed against the user's
+    own account: with "Ship to a different address" left UNCHECKED (so
+    the shipping destination defaults to the account's saved Taiwan
+    billing address) and one item sitting in the cart, WooCommerce
+    computes the shipping cost for that destination right there on the
+    checkout page. When no shipping zone/method matches, it renders
+        <p class="woocommerce-shipping-destination
+                   woocommerce-shipping-not-enabled">
+          No shipping options were found for <city>, Taiwan.
+        </p>
+    instead of a price. This directly reflects whether an order could
+    actually be placed — unlike the old #calc_shipping_country dropdown
+    (see the deprecated taiwan_shipping_status() above), which just
+    listed countries without checking real shipping-zone matches.
+
+    Depends on: (1) the account's saved billing address staying a Taiwan
+    address — if it's ever changed to a different country, this will
+    start reporting THAT country's shipping status instead; (2) at least
+    one item remaining in the account's cart — an empty cart redirects
+    away from the checkout page entirely, which this reports as UNKNOWN.
+    UNKNOWN if the expected markup isn't there at all (empty cart, logged
+    out, Cloudflare challenge, or the site changed markup) — never
+    guessed."""
+    soup = BeautifulSoup(html, "lxml")
+    dest = soup.select_one("p.woocommerce-shipping-destination")
+    if dest is None:
+        return "UNKNOWN"
+    classes = dest.get("class", [])
+    text = dest.get_text(" ", strip=True).lower()
+    if "woocommerce-shipping-not-enabled" in classes or "no shipping options were found" in text:
+        return "UNAVAILABLE"
+    return "AVAILABLE"
