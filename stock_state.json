@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-05T02:46:53.744483+00:00",
+  "updated_at": "2026-10-05T03:48:50.059450+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -70,8 +70,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-05T00:53:08.277987+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-05T03:48:50.059191+00:00"
     },
     "16940": {
       "product_zh": "千木の白",
