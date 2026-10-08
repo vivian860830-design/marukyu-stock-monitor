@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T01:49:41.682255+00:00",
+  "updated_at": "2026-10-08T02:18:08.069041+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -86,8 +86,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-08T00:21:32.630535+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-08T02:18:08.068715+00:00"
     },
     "16942": {
       "product_zh": "千木の白",
