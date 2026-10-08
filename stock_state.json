@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T01:19:04.139044+00:00",
+  "updated_at": "2026-10-08T01:49:41.682255+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -270,8 +270,8 @@
       "product_en": "Wako",
       "sku": "1161100C1",
       "size": "100g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-08T00:21:32.630639+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-08T01:49:41.682125+00:00"
     },
     "16931": {
       "product_zh": "和光",
