@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T02:18:08.069041+00:00",
+  "updated_at": "2026-10-08T02:49:19.954115+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -54,8 +54,8 @@
       "product_en": "Aoarashi",
       "sku": "1F23100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-08T00:21:32.630512+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-08T02:49:19.953649+00:00"
     },
     "16950": {
       "product_zh": "青嵐",
@@ -302,8 +302,8 @@
       "product_en": "Yugen",
       "sku": "1171040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-08T00:21:32.630653+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-08T02:49:19.953885+00:00"
     },
     "16935": {
       "product_zh": "又玄",
