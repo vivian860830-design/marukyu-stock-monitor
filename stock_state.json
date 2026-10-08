@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T02:49:19.954115+00:00",
+  "updated_at": "2026-10-08T03:48:31.810390+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -134,8 +134,8 @@
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-08T00:21:32.630563+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-08T03:48:31.810112+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
@@ -182,8 +182,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C1",
       "size": "100g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-08T00:21:32.630572+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-08T03:48:31.810127+00:00"
     },
     "16927": {
       "product_zh": "金輪",
