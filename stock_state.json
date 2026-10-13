@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-13T04:17:58.559323+00:00",
+  "updated_at": "2026-10-13T05:49:12.520799+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -118,16 +118,16 @@
       "product_en": "Eiju",
       "sku": "1131020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-13T04:17:58.559160+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-13T05:49:12.520592+00:00"
     },
     "16918": {
       "product_zh": "永寿",
       "product_en": "Eiju",
       "sku": "1131040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-13T04:17:58.559160+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-13T05:49:12.520592+00:00"
     },
     "16943": {
       "product_zh": "五十鈴",
@@ -262,8 +262,8 @@
       "product_en": "Wako",
       "sku": "1161040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-13T04:17:58.559213+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-13T05:49:12.520656+00:00"
     },
     "16930": {
       "product_zh": "和光",
