@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-13T05:49:12.520799+00:00",
+  "updated_at": "2026-10-13T06:22:37.679857+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -14,8 +14,8 @@
       "product_en": "Unkaku",
       "sku": "1141040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-13T04:17:58.559198+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-13T06:22:37.679691+00:00"
     },
     "16922": {
       "product_zh": "雲鶴",
@@ -190,8 +190,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-13T04:17:58.559174+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-13T06:22:37.679659+00:00"
     },
     "22822": {
       "product_zh": "極 長安",
