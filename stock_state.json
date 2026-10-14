@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-14T05:59:43.070940+00:00",
+  "updated_at": "2026-10-14T07:37:05.083616+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-14T05:59:43.070747+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-14T07:37:05.083350+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
@@ -278,8 +278,8 @@
       "product_en": "Wako",
       "sku": "1161100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-10-14T05:59:43.070838+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-10-14T07:37:05.083459+00:00"
     },
     "16932": {
       "product_zh": "和光",
