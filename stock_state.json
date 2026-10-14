@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-13T08:18:57.811839+00:00",
+  "updated_at": "2026-10-14T05:59:43.070940+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -14,8 +14,8 @@
       "product_en": "Unkaku",
       "sku": "1141040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-13T06:22:37.679691+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070824+00:00"
     },
     "16922": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-13T06:58:07.027571+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070747+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
@@ -54,8 +54,8 @@
       "product_en": "Aoarashi",
       "sku": "1F23100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-08T02:49:19.953649+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070747+00:00"
     },
     "16950": {
       "product_zh": "青嵐",
@@ -70,8 +70,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-05T03:48:50.059191+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070772+00:00"
     },
     "16940": {
       "product_zh": "千木の白",
@@ -126,16 +126,16 @@
       "product_en": "Eiju",
       "sku": "1131040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-13T05:49:12.520592+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070788+00:00"
     },
     "16943": {
       "product_zh": "五十鈴",
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-08T03:48:31.810112+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070794+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
@@ -174,8 +174,8 @@
       "product_en": "Kinrin",
       "sku": "1151040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-06T02:45:54.447240+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070801+00:00"
     },
     "16926": {
       "product_zh": "金輪",
@@ -222,8 +222,8 @@
       "product_en": "Tenju",
       "sku": "1111040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-06T12:50:20.538312+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070818+00:00"
     },
     "17640": {
       "product_zh": "若竹",
@@ -238,8 +238,8 @@
       "product_en": "Wakatake",
       "sku": "1B27100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-13T08:18:57.811642+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070831+00:00"
     },
     "17633": {
       "product_zh": "若竹",
@@ -278,8 +278,8 @@
       "product_en": "Wako",
       "sku": "1161100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-05T02:15:20.445097+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-10-14T05:59:43.070838+00:00"
     },
     "16932": {
       "product_zh": "和光",
