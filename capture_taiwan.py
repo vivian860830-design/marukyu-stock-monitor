@@ -1,4 +1,5 @@
 """Runs in its OWN dedicated job (monitor.yml's `capture-taiwan` job),
+
 parallel to — but never folded into — the 12 per-product `capture` matrix
 jobs. Confirmed 2026-09-15 (see capture_one.py's docstring): a single
 job/browser session that loads more than one page gets Cloudflare-blocked
@@ -6,31 +7,30 @@ after the first navigation. So this script must stay the only thing that
 runs in its job, and must never be appended onto a product capture job.
 
 Visits the checkout page ONCE, with the shared logged-in session, and
-reads the real, authoritative Taiwan-shipping signal: whether WooCommerce
-found a matching shipping rate for the account's saved billing address.
-Confirmed 2026-10-03 against the user's own account/billing address
-(Taiwan): with "Ship to a different address" left UNCHECKED, the
-checkout page's order-review table shows either a computed shipping cost
-(shipping enabled) or "No shipping options were found for <city>,
-Taiwan." (shipping not enabled) — see
-stock_classifier.taiwan_shipping_status_from_checkout() for the exact
-markup this reads.
+reads the real Taiwan-shipping signal (see
+stock_classifier.taiwan_shipping_status_from_checkout()).
 
-This requires one item to already be sitting in the account's cart —
-checkout redirects elsewhere with an empty cart. Confirmed 2026-10-03
-with "Tama Homare - 40g bag"
-(https://www.marukyu-koyamaen.co.jp/english/shop/products/1127040c6) left
-in the cart for exactly this purpose. This script never adds, removes,
-or submits anything — it only loads the checkout page and reads it.
+CHANGE vs the previous version (2026-10-24): the checkout page's
+"Ship to an address different from the billing address" checkbox is
+observed to be CHECKED by default on the user's account. When checked,
+WooCommerce computes shipping for the saved *shipping* address, not the
+billing address. This version unchecks it IN PLACE (an ajax recalculation,
+not a second page navigation, so it does not add a Cloudflare-exposed
+request) and only then reads the result.
 
-Writes diagnostic-output/taiwan-shipping.json, shaped so aggregate.py's
-existing loader (which just globs every *.json under product-results/,
-see load_product_results()) picks it up like any other product result:
-no "rows", so it never contributes a restock, but its "taiwan" field is
-exactly what aggregate.py's
-`if taiwan == "UNKNOWN": taiwan = result.get("taiwan", "UNKNOWN")` loop
-ends up using. No changes to aggregate.py were needed for this.
+Fail-closed rules:
+  - checkbox found but still checked after the attempt -> taiwan = UNKNOWN
+  - checkbox not found -> read as before, but record checkbox="not_found"
+    in the JSON so the situation is visible
+Never clicks Place order, never adds/removes cart items, never submits.
+
+Checkbox selector confirmed from a DevTools screenshot (input name
+`ship_to_different_address`, label `#ship-to-different-address`). Still
+unverified: the ajax name `update_order_review` (falls back to a fixed wait)
+and whether the label click actually toggles it on the live page (checked
+afterwards; if not toggled the result is UNKNOWN, never a guess).
 """
+
 import base64
 import json
 import os
@@ -43,6 +43,11 @@ from stock_classifier import taiwan_shipping_status_from_checkout
 
 OUT = Path("diagnostic-output")
 CHECKOUT_URL = "https://www.marukyu-koyamaen.co.jp/english/shop/cart/checkout"
+# Confirmed from the user's DevTools screenshot (2026-10-24): the input is
+# <input id="use_shipping_address" name="ship_to_different_address" type="checkbox" checked>,
+# inside <label id="ship-to-different-address"> (custom-styled via ::before).
+CHECKBOX = 'input[name="ship_to_different_address"]'
+LABEL = "#ship-to-different-address"
 
 
 def settle(page):
@@ -64,10 +69,37 @@ def load_storage_state():
         return None
 
 
+def uncheck_ship_to_different(page):
+    """Returns 'not_found' | 'already_unchecked' | 'unchecked' | 'still_checked'."""
+    box = page.locator(CHECKBOX)
+    if box.count() != 1:
+        return "not_found"
+    if not box.is_checked():
+        return "already_unchecked"
+    # The real input is hidden behind a custom-styled label, so click the
+    # label (what a human clicks). The ajax name is unverified; if it never
+    # fires we fall through to settle().
+    try:
+        with page.expect_response(lambda r: "update_order_review" in r.url, timeout=15000):
+            page.locator(LABEL).click()
+    except Exception:
+        pass
+    settle(page)
+    if box.is_checked():
+        try:
+            box.uncheck(force=True)  # fallback if the label click did not toggle it
+        except Exception:
+            pass
+        settle(page)
+    return "still_checked" if box.is_checked() else "unchecked"
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     storage_state = load_storage_state()
-
+    html = ""
+    response = None
+    checkbox = "not_attempted"
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         try:
@@ -78,22 +110,29 @@ def main():
             page = context.new_page()
             response = page.goto(CHECKOUT_URL, wait_until="domcontentloaded", timeout=45000)
             settle(page)
+            checkbox = uncheck_ship_to_different(page)
             html = page.content()
         finally:
             browser.close()
 
-    taiwan = taiwan_shipping_status_from_checkout(html) if html else "UNKNOWN"
+    if checkbox == "still_checked":
+        taiwan, reason = "UNKNOWN", "CHECKBOX_STILL_CHECKED"
+    else:
+        taiwan = taiwan_shipping_status_from_checkout(html) if html else "UNKNOWN"
+        reason = "CHECKOUT_SHIPPING_READ" if taiwan != "UNKNOWN" else "CHECKOUT_MARKUP_NOT_FOUND"
+
     result = {
         "product_slug": "taiwan-shipping-check",
         "rows": [],
         "page_status": "OK" if taiwan != "UNKNOWN" else "UNKNOWN",
-        "page_reason": "CHECKOUT_SHIPPING_READ" if taiwan != "UNKNOWN" else "CHECKOUT_MARKUP_NOT_FOUND",
+        "page_reason": reason,
+        "ship_to_different_checkbox": checkbox,
         "http_status": response.status if response else None,
         "observed_at": datetime.now(timezone.utc).isoformat(),
         "taiwan": taiwan,
     }
     (OUT / "taiwan-shipping.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[taiwan-shipping] taiwan={taiwan} http_status={result['http_status']}")
+    print(f"[taiwan-shipping] taiwan={taiwan} checkbox={checkbox} http_status={result['http_status']}")
 
 
 if __name__ == "__main__":
