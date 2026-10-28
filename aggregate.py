@@ -70,6 +70,23 @@ when the resulting state actually differs from what was loaded at the
 start of the run (compared via a JSON snapshot). A run where every
 product's status is identical to last time now leaves stock_state.json
 completely untouched, so the commit step has nothing to commit.
+
+Taiwan-shipping notification (added 2026-10-24): the Taiwan shippability
+signal (capture_taiwan.py -> "taiwan" field: AVAILABLE / UNAVAILABLE /
+UNKNOWN) is now also tracked in stock_state.json under "taiwan_shipping"
+and sent as its own payload {"type": "taiwan-shipping-open"} ONLY on
+UNAVAILABLE -> AVAILABLE. Rules live in notify_helpers.apply_taiwan_shipping():
+UNKNOWN never overwrites the stored state; the first reading is baseline
+only; if the notification fails the stored state is NOT advanced, so the
+next run retries. Requires the matching Code.gs branch
+(handleTaiwanShippingNotice) to be deployed FIRST.
+
+GAS response check (added 2026-10-24): the Apps Script web app can only
+answer HTTP 200, even when it rejected the payload. The updated Code.gs
+answers with a body starting with "ERROR" in that case, and
+_post_to_gas_webhook() now treats that as a failed send (see
+notify_helpers.gas_response_ok). An un-updated Code.gs answers "OK" for
+everything, so this cannot detect failures until Code.gs is redeployed.
 """
 import json
 import os
@@ -79,6 +96,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from products import PRODUCTS
+from notify_helpers import apply_taiwan_shipping, gas_response_ok
 
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "product-results"))
 STATE_PATH = Path("stock_state.json")
@@ -157,8 +175,9 @@ def diff_and_update(state, result):
 
 
 def _post_to_gas_webhook(payload, dry_run, evidence_filename):
-    """Shared low-level sender for both payload shapes (restock and
-    session-alert). `payload` must already include "source" and "secret"."""
+    """Shared low-level sender for all payload shapes (restock,
+    session-alert, taiwan-shipping-open). `payload` must already include
+    "source" and "secret"."""
     EVIDENCE_DIR.mkdir(exist_ok=True)
     webhook_url = os.environ.get("GAS_WEBHOOK_URL", "")
     (EVIDENCE_DIR / evidence_filename).write_text(
@@ -176,8 +195,9 @@ def _post_to_gas_webhook(payload, dry_run, evidence_filename):
     request = urllib.request.Request(webhook_url, data=body, headers={"Content-Type": "application/json"}, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
-            print(f"GAS webhook responded: HTTP {response.status}")
-            return 200 <= response.status < 300
+            body_text = response.read().decode("utf-8", errors="replace").strip()
+            print(f"GAS webhook responded: HTTP {response.status} body={body_text[:40]!r}")
+            return gas_response_ok(response.status, body_text)
     except urllib.error.HTTPError as error:
         print(f"GAS webhook HTTP error: {error.code} {error.reason}")
         return False
@@ -205,6 +225,14 @@ def send_session_alert(affected_count, total, dry_run):
         "total": total,
     }
     return _post_to_gas_webhook(payload, dry_run, "session-alert-payload.json")
+
+
+def send_taiwan_notice(dry_run):
+    """Distinct payload shape — requires the matching
+    handleTaiwanShippingNotice() branch in Code.gs (see module docstring)."""
+    secret = os.environ.get("MONITOR_SECRET", "")
+    payload = {"source": "github-monitor", "secret": secret, "type": "taiwan-shipping-open"}
+    return _post_to_gas_webhook(payload, dry_run, "taiwan-notice-payload.json")
 
 
 def check_session_health(state, results, dry_run):
@@ -261,6 +289,14 @@ def main():
     print(f"DRY_RUN: {dry_run}")
 
     check_session_health(state, results, dry_run)
+
+    # Taiwan-shipping transition (added 2026-10-24). Runs before the save
+    # block so a successful transition is persisted in the same commit; a
+    # failed notification leaves the stored state unchanged (retry next run).
+    taiwan_action = apply_taiwan_shipping(
+        state, taiwan, datetime.now(timezone.utc).isoformat(),
+        lambda: send_taiwan_notice(dry_run))
+    print(f"taiwan shipping state: {taiwan_action}")
 
     if dry_run:
         # A dry run must leave no trace: it simulates the diff against the
