@@ -41,6 +41,7 @@ from urllib.parse import urlsplit
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
 from stock_classifier import taiwan_shipping_status_from_checkout
+from notify_helpers import decide_taiwan
 
 OUT = Path("diagnostic-output")
 CHECKOUT_URL = "https://www.marukyu-koyamaen.co.jp/english/shop/cart/checkout"
@@ -71,7 +72,13 @@ JS_DIAG = """() => {
     no_options_message: /No shipping options were found/i.test(row ? row.textContent : ''),
     shipping_method_inputs: document.querySelectorAll('input[name^="shipping_method"]').length,
     checkbox_present: !!document.querySelector('input[name="ship_to_different_address"]'),
-    checkbox_checked: (document.querySelector('input[name="ship_to_different_address"]') || {}).checked === true
+    checkbox_checked: (document.querySelector('input[name="ship_to_different_address"]') || {}).checked === true,
+    billing_country: (() => {
+      const el = document.querySelector('#billing_country, select[name="billing_country"], input[name="billing_country"]');
+      return el ? (el.value || '') : null;
+    })(),
+    shipping_methods: [...document.querySelectorAll('input[name^="shipping_method"]')].map(i =>
+      ({id: (i.value || '').slice(0, 40), type: i.type, checked: !!i.checked}))
   };
 }"""
 
@@ -156,8 +163,8 @@ def main():
     if checkbox == "still_checked":
         taiwan, reason = "UNKNOWN", "CHECKBOX_STILL_CHECKED"
     else:
-        taiwan = taiwan_shipping_status_from_checkout(html) if html else "UNKNOWN"
-        reason = "CHECKOUT_SHIPPING_READ" if taiwan != "UNKNOWN" else "CHECKOUT_MARKUP_NOT_FOUND"
+        html_status = taiwan_shipping_status_from_checkout(html) if html else "UNKNOWN"
+        taiwan, reason = decide_taiwan(html_status, diag_after)
 
     result = {
         "product_slug": "taiwan-shipping-check",
