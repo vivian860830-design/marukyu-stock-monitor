@@ -7,10 +7,24 @@ on:
         type: boolean
         default: true
   schedule:
-    # Every 30 minutes. Each run is 12 independent jobs (one per product)
-    # plus one aggregate job; GitHub Actions schedules are best-effort and
-    # can run a few minutes late during busy periods.
-    - cron: '*/30 * * * *'
+    # Every 30 minutes, at :07 and :37. Changed 2026-10-30 from '*/30'
+    # (:00 and :30): GitHub documents that scheduled runs can be delayed or
+    # dropped under high load, with the start of each hour the busiest time,
+    # and recommends scheduling at a different minute. Observed on this repo
+    # 2026-10-29/30: gaps of 3-7 hours between scheduled runs instead of 30
+    # minutes. The new minutes are NOT guaranteed to fix that (scheduling is
+    # best-effort). Each run is 12 independent jobs (one per product) plus
+    # one capture-taiwan job and one aggregate job.
+    - cron: '7,37 * * * *'
+
+# Added 2026-10-30: never let two runs overlap (e.g. a late scheduled run
+# plus a manual run). Overlap could make two aggregate jobs read the same
+# stock_state.json and race on the commit/push. cancel-in-progress is false
+# so a run that is already working is never killed halfway; a newer run
+# simply waits for it.
+concurrency:
+  group: marukyu-monitor
+  cancel-in-progress: false
 
 jobs:
   capture:
