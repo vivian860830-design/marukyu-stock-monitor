@@ -36,6 +36,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
@@ -48,6 +49,40 @@ CHECKOUT_URL = "https://www.marukyu-koyamaen.co.jp/english/shop/cart/checkout"
 # inside <label id="ship-to-different-address"> (custom-styled via ::before).
 CHECKBOX = 'input[name="ship_to_different_address"]'
 LABEL = "#ship-to-different-address"
+
+
+# Diagnostics: booleans / counts / URL path only. Deliberately NO page text,
+# address, name or e-mail -- artifacts of a public repository are downloadable.
+JS_DIAG = """() => {
+  const text = document.body?.innerText || '';
+  const row = document.querySelector('tr.woocommerce-shipping-totals');
+  return {
+    title: (document.title || '').slice(0, 80),
+    challenge: /Just a moment/i.test(document.title) ||
+               /Performing security verification|Verify you are human/.test(text) ||
+               !!document.querySelector('#cf-turnstile, .cf-turnstile, input[name="cf-turnstile-response"]'),
+    logged_in: document.body.classList.contains('logged-in') ||
+               !!document.querySelector('a[href*="customer-logout"]'),
+    checkout_form_present: !!document.querySelector('form.checkout'),
+    cart_items: document.querySelectorAll('tr.cart_item').length,
+    shipping_row: !!row,
+    destination_p: !!document.querySelector('p.woocommerce-shipping-destination'),
+    not_enabled_class: !!document.querySelector('.woocommerce-shipping-not-enabled'),
+    no_options_message: /No shipping options were found/i.test(row ? row.textContent : ''),
+    shipping_method_inputs: document.querySelectorAll('input[name^="shipping_method"]').length,
+    checkbox_present: !!document.querySelector('input[name="ship_to_different_address"]'),
+    checkbox_checked: (document.querySelector('input[name="ship_to_different_address"]') || {}).checked === true
+  };
+}"""
+
+
+def diagnostics(page):
+    try:
+        data = page.evaluate(JS_DIAG)
+        data["path"] = urlsplit(page.url).path
+        return data
+    except Exception as error:
+        return {"error": type(error).__name__}
 
 
 def settle(page):
@@ -100,6 +135,7 @@ def main():
     html = ""
     response = None
     checkbox = "not_attempted"
+    diag_before = diag_after = None
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         try:
@@ -110,7 +146,9 @@ def main():
             page = context.new_page()
             response = page.goto(CHECKOUT_URL, wait_until="domcontentloaded", timeout=45000)
             settle(page)
+            diag_before = diagnostics(page)
             checkbox = uncheck_ship_to_different(page)
+            diag_after = diagnostics(page)
             html = page.content()
         finally:
             browser.close()
@@ -127,12 +165,16 @@ def main():
         "page_status": "OK" if taiwan != "UNKNOWN" else "UNKNOWN",
         "page_reason": reason,
         "ship_to_different_checkbox": checkbox,
+        "diag_before_uncheck": diag_before,
+        "diag_after_uncheck": diag_after,
         "http_status": response.status if response else None,
         "observed_at": datetime.now(timezone.utc).isoformat(),
         "taiwan": taiwan,
     }
     (OUT / "taiwan-shipping.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[taiwan-shipping] taiwan={taiwan} checkbox={checkbox} http_status={result['http_status']}")
+    print(f"[taiwan-shipping] diag_before={json.dumps(diag_before)}")
+    print(f"[taiwan-shipping] diag_after={json.dumps(diag_after)}")
 
 
 if __name__ == "__main__":
