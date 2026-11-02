@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-02T16:32:02.960650+00:00",
+  "updated_at": "2026-11-02T21:58:55.425893+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -190,8 +190,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-02T03:28:31.918911+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-02T21:58:55.425587+00:00"
     },
     "22822": {
       "product_zh": "極 長安",
