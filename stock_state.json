@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-06T09:39:25.454096+00:00",
+  "updated_at": "2026-11-06T13:58:52.792575+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -30,8 +30,8 @@
       "product_en": "Unkaku",
       "sku": "1141100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-06T07:06:58.996888+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-06T13:58:52.792414+00:00"
     },
     "16947": {
       "product_zh": "青嵐",
