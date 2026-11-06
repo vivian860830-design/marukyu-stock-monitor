@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-05T23:58:48.141831+00:00",
+  "updated_at": "2026-11-06T07:06:58.997119+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -30,8 +30,8 @@
       "product_en": "Unkaku",
       "sku": "1141100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-09-24T05:43:03.843190+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-06T07:06:58.996888+00:00"
     },
     "16947": {
       "product_zh": "青嵐",
@@ -310,8 +310,8 @@
       "product_en": "Yugen",
       "sku": "1171100C1",
       "size": "100g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-10-05T02:46:53.744283+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-06T07:06:58.996927+00:00"
     },
     "16936": {
       "product_zh": "又玄",
