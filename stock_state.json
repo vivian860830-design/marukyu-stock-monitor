@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-08T11:58:51.326295+00:00",
+  "updated_at": "2026-11-08T23:58:26.645073+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -222,8 +222,8 @@
       "product_en": "Tenju",
       "sku": "1111040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-06T07:37:41.750333+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-08T23:58:26.644813+00:00"
     },
     "17640": {
       "product_zh": "若竹",
