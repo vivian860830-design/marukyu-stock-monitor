@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-10T16:58:52.446477+00:00",
+  "updated_at": "2026-11-10T23:58:54.926756+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -206,8 +206,8 @@
       "product_en": "Kiwami Choan",
       "sku": "1G36040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-10T07:01:25.186467+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-10T23:58:54.926636+00:00"
     },
     "16900": {
       "product_zh": "天授",
