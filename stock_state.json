@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-11T02:58:33.266806+00:00",
+  "updated_at": "2026-11-11T03:28:52.138415+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -150,8 +150,8 @@
       "product_en": "Isuzu",
       "sku": "1F43100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-11T00:59:02.023459+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-11T03:28:52.138251+00:00"
     },
     "16946": {
       "product_zh": "五十鈴",
