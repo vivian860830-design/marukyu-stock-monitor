@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-11-13T02:58:59.081737+00:00",
+  "updated_at": "2026-11-13T03:29:15.517899+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-13T00:59:02.263620+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-13T03:29:15.517742+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
@@ -150,8 +150,8 @@
       "product_en": "Isuzu",
       "sku": "1F43100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-13T00:59:02.263591+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-13T03:29:15.517688+00:00"
     },
     "16946": {
       "product_zh": "五十鈴",
