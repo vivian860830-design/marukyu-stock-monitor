@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-17T03:28:57.126068+00:00",
+  "updated_at": "2026-11-17T03:58:57.904016+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -126,8 +126,8 @@
       "product_en": "Eiju",
       "sku": "1131040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-17T02:29:02.106411+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-17T03:58:57.903761+00:00"
     },
     "16943": {
       "product_zh": "五十鈴",
