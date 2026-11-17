@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-17T02:29:02.106638+00:00",
+  "updated_at": "2026-11-17T02:59:07.047808+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -182,8 +182,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C1",
       "size": "100g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-17T02:29:02.106425+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-17T02:59:07.047678+00:00"
     },
     "16927": {
       "product_zh": "金輪",
