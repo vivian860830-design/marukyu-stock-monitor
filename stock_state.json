@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T01:29:45.360109+00:00",
+  "updated_at": "2026-11-18T03:31:18.874492+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -318,8 +318,8 @@
       "product_en": "Yugen",
       "sku": "1171100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-18T00:29:04.553271+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-18T03:31:18.874399+00:00"
     },
     "16937": {
       "product_zh": "又玄",
