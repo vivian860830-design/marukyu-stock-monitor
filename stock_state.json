@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-11-18T03:31:18.874492+00:00",
+  "updated_at": "2026-11-18T05:31:13.862668+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-18T00:29:04.553251+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-18T05:31:13.862551+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
@@ -70,8 +70,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-18T00:29:04.553206+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-18T05:31:13.862504+00:00"
     },
     "16940": {
       "product_zh": "千木の白",
