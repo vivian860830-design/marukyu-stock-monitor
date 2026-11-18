@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T05:31:13.862668+00:00",
+  "updated_at": "2026-11-18T10:01:28.324639+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -134,8 +134,8 @@
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-18T00:29:04.553225+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-18T10:01:28.324358+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
