@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-19T04:32:37.419871+00:00",
+  "updated_at": "2026-11-19T08:00:18.502693+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -118,8 +118,8 @@
       "product_en": "Eiju",
       "sku": "1131020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-19T01:04:56.579275+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-19T08:00:18.502347+00:00"
     },
     "16918": {
       "product_zh": "永寿",
