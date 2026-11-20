@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-20T05:02:14.950331+00:00",
+  "updated_at": "2026-11-20T23:58:56.471062+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -330,7 +330,7 @@
       "observed_at": "2026-09-24T05:43:03.843238+00:00"
     }
   },
-  "session_alert_sent_at": null,
+  "session_alert_sent_at": "2026-11-20T23:58:56.470787+00:00",
   "taiwan_shipping": {
     "status": "AVAILABLE",
     "observed_at": "2026-11-19T01:04:56.579334+00:00"
