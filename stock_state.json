@@ -1,21 +1,21 @@
 {
-  "updated_at": "2026-11-21T09:59:06.787898+00:00",
+  "updated_at": "2026-11-24T02:33:52.489258+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-18T05:31:13.862551+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489067+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-19T04:32:37.419653+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489067+00:00"
     },
     "16922": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-19T03:59:01.870186+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.488979+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
@@ -54,8 +54,8 @@
       "product_en": "Aoarashi",
       "sku": "1F23100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-18T11:02:33.901165+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.488979+00:00"
     },
     "16950": {
       "product_zh": "青嵐",
@@ -70,8 +70,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-18T05:31:13.862504+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489009+00:00"
     },
     "16940": {
       "product_zh": "千木の白",
@@ -110,16 +110,16 @@
       "product_en": "Choan",
       "sku": "1121040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-13T07:28:53.767287+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489018+00:00"
     },
     "16917": {
       "product_zh": "永寿",
       "product_en": "Eiju",
       "sku": "1131020C1",
       "size": "20g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-19T08:00:18.502347+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489024+00:00"
     },
     "16918": {
       "product_zh": "永寿",
@@ -134,8 +134,8 @@
       "product_en": "Isuzu",
       "sku": "1191040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-18T10:01:28.324358+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489029+00:00"
     },
     "16944": {
       "product_zh": "五十鈴",
@@ -150,8 +150,8 @@
       "product_en": "Isuzu",
       "sku": "1F43100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-19T03:34:00.513238+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489029+00:00"
     },
     "16946": {
       "product_zh": "五十鈴",
@@ -190,8 +190,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C6",
       "size": "100g bag",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-19T21:00:02.230250+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489035+00:00"
     },
     "22822": {
       "product_zh": "極 長安",
@@ -270,8 +270,8 @@
       "product_en": "Wako",
       "sku": "1161100C1",
       "size": "100g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-18T01:29:45.359931+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489083+00:00"
     },
     "16931": {
       "product_zh": "和光",
@@ -302,8 +302,8 @@
       "product_en": "Yugen",
       "sku": "1171040C1",
       "size": "40g can",
-      "status": "SOLD_OUT",
-      "observed_at": "2026-11-16T11:58:50.498713+00:00"
+      "status": "AVAILABLE",
+      "observed_at": "2026-11-24T02:33:52.489092+00:00"
     },
     "16935": {
       "product_zh": "又玄",
@@ -332,7 +332,7 @@
   },
   "session_alert_sent_at": null,
   "taiwan_shipping": {
-    "status": "AVAILABLE",
-    "observed_at": "2026-11-19T01:04:56.579334+00:00"
+    "status": "UNAVAILABLE",
+    "observed_at": "2026-11-24T02:33:52.489113+00:00"
   }
 }
