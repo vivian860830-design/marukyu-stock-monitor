@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-11-24T16:29:03.118030+00:00",
+  "updated_at": "2026-11-24T23:58:51.640373+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-24T02:33:52.489067+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-24T23:58:51.640147+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
@@ -38,8 +38,8 @@
       "product_en": "Aoarashi",
       "sku": "11A1040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-24T02:33:52.488979+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-24T23:58:51.640043+00:00"
     },
     "16948": {
       "product_zh": "青嵐",
@@ -110,16 +110,16 @@
       "product_en": "Choan",
       "sku": "1121040C1",
       "size": "40g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-24T02:33:52.489018+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-24T23:58:51.640079+00:00"
     },
     "16917": {
       "product_zh": "永寿",
       "product_en": "Eiju",
       "sku": "1131020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-24T02:33:52.489024+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-24T23:58:51.640087+00:00"
     },
     "16918": {
       "product_zh": "永寿",
@@ -190,8 +190,8 @@
       "product_en": "Kinrin",
       "sku": "1151100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-24T02:33:52.489035+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-24T23:58:51.640101+00:00"
     },
     "22822": {
       "product_zh": "極 長安",
