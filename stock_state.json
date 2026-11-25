@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-11-25T06:28:57.923985+00:00",
+  "updated_at": "2026-11-25T06:59:20.850355+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-25T04:29:05.721059+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-25T06:59:20.850249+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
@@ -86,8 +86,8 @@
       "product_en": "Chigi no Shiro",
       "sku": "1181100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-25T04:29:05.721015+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-25T06:59:20.850211+00:00"
     },
     "16942": {
       "product_zh": "千木の白",
@@ -310,8 +310,8 @@
       "product_en": "Yugen",
       "sku": "1171100C1",
       "size": "100g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-25T04:29:05.721080+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-25T06:59:20.850265+00:00"
     },
     "16936": {
       "product_zh": "又玄",
