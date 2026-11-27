@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-11-27T01:28:53.279909+00:00",
+  "updated_at": "2026-11-27T01:59:15.700745+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
       "product_en": "Unkaku",
       "sku": "1141020C1",
       "size": "20g can",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-27T01:28:53.279700+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-27T01:59:15.700613+00:00"
     },
     "16921": {
       "product_zh": "雲鶴",
