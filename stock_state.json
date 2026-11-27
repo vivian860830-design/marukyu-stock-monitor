@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-27T03:58:53.672546+00:00",
+  "updated_at": "2026-11-27T04:29:02.882640+00:00",
   "skus": {
     "16920": {
       "product_zh": "雲鶴",
@@ -278,8 +278,8 @@
       "product_en": "Wako",
       "sku": "1161100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-27T01:28:53.279719+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-27T04:28:59.384783+00:00"
     },
     "16932": {
       "product_zh": "和光",
@@ -318,8 +318,8 @@
       "product_en": "Yugen",
       "sku": "1171100C6",
       "size": "100g bag",
-      "status": "AVAILABLE",
-      "observed_at": "2026-11-27T01:28:53.279736+00:00"
+      "status": "SOLD_OUT",
+      "observed_at": "2026-11-27T04:28:59.384793+00:00"
     },
     "16937": {
       "product_zh": "又玄",
@@ -332,7 +332,7 @@
   },
   "session_alert_sent_at": null,
   "taiwan_shipping": {
-    "status": "UNAVAILABLE",
-    "observed_at": "2026-11-27T01:28:53.279766+00:00"
+    "status": "AVAILABLE",
+    "observed_at": "2026-11-27T04:28:59.384826+00:00"
   }
 }
